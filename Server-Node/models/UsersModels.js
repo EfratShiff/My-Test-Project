@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+
 const UserSchema=mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -6,5 +7,3 @@ const UserSchema=mongoose.Schema({
     role: { type: String, enum: ['teacher', 'student'], required: true },
 })
 module.exports = mongoose.model("User", UserSchema);
-
-
