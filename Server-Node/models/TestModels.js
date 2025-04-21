@@ -11,5 +11,5 @@ const TestSchema = new mongoose.Schema({
     timeLimit: { type: Number, default: 0 }, // זמן מוגבל למבחן (ב minutes) - אם יש צורך
 });
 
-const Test = mongoose.model('Test', TestSchema);
+const Test = mongoose.model('TestSchema', TestSchema);
 module.exports = Test;

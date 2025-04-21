@@ -15,6 +15,8 @@ const bodyParser = require("body-parser")
 
 const connectDb = process.env.DB_CONNECT;  // כאן אתה שולף את ה-URI מה-ENV
 app.use(bodyParser.json());
+app.use(express.json());
+
 mongoose.connect(connectDb).then(() => {
     console.log('connected');
 }).catch(err => {

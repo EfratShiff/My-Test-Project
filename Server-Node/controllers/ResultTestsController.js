@@ -1,72 +1,111 @@
+
 // const Result = require('../models/ResultTestsModels');
 // const Test = require('../models/TestModels');
 
-// async function TestCheck(req, res) {//בודקת את המבחן
+// const mongoose = require('mongoose');
+
+// async function TestCheck(req, res) {
 //     try {
 //         const { TestId, studentId, answers } = req.body;
-//         // בדיקה שהמשתנים קיימים
-//         if (!TestId || !studentId || !answers) {
-//             return res.status(400).json({ message: "חסר מידע - יש לוודא ששלחת את כל השדות הנדרשים" });
+
+//         console.log("📥 Received request body:", req.body);
+
+//         // בדיקת תקינות הקלט
+//         if (!TestId || !studentId || !answers || !Array.isArray(answers) || answers.length === 0) {
+//             return res.status(400).json({ message: "❌ חסר מידע - יש לוודא ששלחת את כל השדות הנדרשים" });
 //         }
+
+//         // המרת מזהים ל-ObjectId
+//         const testId = new mongoose.Types.ObjectId(TestId);
+//         const studentObjectId = new mongoose.Types.ObjectId(studentId);
+//         const formattedAnswers = answers.map(answer => ({
+//             questionId: new mongoose.Types.ObjectId(answer.questionId),
+//             selectedOptionIndex: answer.selectedOptionIndex
+//         }));
+
 //         // שליפת המבחן מהמסד נתונים
-//         const test = await Test.findById(TestId.trim());
-//         if (!test) return res.status(404).json({ message: "מבחן לא נמצא" });
-//         // קביעת משקל כל שאלה
+//         const test = await Test.findById(testId);
+//         if (!test) {
+//             console.log("⚠️ מבחן לא נמצא:", TestId);
+//             return res.status(404).json({ message: "❌ מבחן לא נמצא במסד הנתונים" });
+//         }
+
+//         console.log("✅ מבחן נמצא:", testId);
+//         console.log("📌 מספר שאלות במבחן:", test.questions.length);
+
+//         // חישוב ציון
 //         const totalQuestions = test.questions.length;
+//         console.log(totalQuestions);
 //         const pointsPerQuestion = 100 / totalQuestions;
+//         console.log(pointsPerQuestion);
 //         let score = 0;
-//         // יצירת מערך תשובות מסודר
-//         const studentAnswers = new Array(totalQuestions).fill(null);
-//         answers.forEach((answer) => {
-//             studentAnswers[answer.questionIndex] = answer.selectedOption || null;
-//         });
-//         // חישוב הציון
-//         test.questions.forEach((question, index) => {
-//             if (studentAnswers[index] === question.correctAnswer) {
+        
+//         formattedAnswers.forEach(answer => {
+//             const question = test.questions.find(q => q._id.toString() === answer.questionId.toString());
+
+//             if (!question) {
+//                 console.log(`⚠️ שאלה לא נמצאה במבחן: ${answer.questionId}`);
+//                 return;
+//             }
+
+//             console.log(`✅ שאלה ${question._id} נמצאה!`);
+//             console.log(`🎯 תשובה נכונה: ${question.correctAnswer}`);
+//             console.log(`📝 תשובה שנבחרה: ${answer.selectedOptionIndex}`);
+
+//             // בדיקה האם התשובה הנכונה היא אינדקס או טקסט
+//             if (question.correctAnswer == answer.selectedOptionIndex) {
+//                 console.log("✔️ תשובה נכונה! מוסיף נקודות");
 //                 score += pointsPerQuestion;
+//             } else {
+//                 console.log("❌ תשובה שגויה");
 //             }
 //         });
+
 //         // עיגול הציון לשתי ספרות אחרי הנקודה
 //         score = Math.round(score * 100) / 100;
-//         // שמירת התוצאה במסד נתונים
-//         const result = new Result({ 
-//             TestId, 
-//             studentId, 
-//             score, 
-//             answers: studentAnswers.map((answer, index) => ({
-//                 questionIndex: index,
-//                 selectedOption: answer || "לא נבחרה תשובה" // אם לא נבחרה תשובה – מסמנים זאת
-//             })) 
+
+//         console.log("🏆 ציון סופי:", score);
+
+//         // יצירת מסמך חדש ושמירה במסד הנתונים
+//         const result = new Result({
+//             TestId: testId,
+//             studentId: studentObjectId,
+//             answers: formattedAnswers,
+//             Mark: score
 //         });
+
+//         console.log("📤 שמירת תוצאה במסד הנתונים:", result);
+
 //         await result.save();
-//         res.status(201).json({ message: "תוצאה נשמרה בהצלחה", result });
+//         res.status(201).json({ message: "✅ תוצאה נשמרה בהצלחה", result });
+
 //     } catch (error) {
-//         console.error("שגיאה בשמירת התוצאה:", error);
-//         res.status(500).json({ message: "שגיאה בשמירת התוצאה", error });
+//         console.error("❌ שגיאה בשמירת התוצאה:", error);
+//         res.status(500).json({ message: "❌ שגיאה בשמירת התוצאה", error });
 //     }
 // }
-
 
 // async function getStudentTestResult(req, res) {
 //     try {
 //         const { studentId, TestId } = req.params;
+
 //         // בדיקה האם הפרמטרים קיימים
 //         if (!studentId || !TestId) {
 //             return res.status(400).json({ message: "יש לספק מזהה תלמיד ומזהה מבחן" });
 //         }
+
 //         // שליפת התוצאה ממסד הנתונים
 //         const result = await Result.findOne({ studentId, TestId: TestId });
 //         if (!result) {
 //             return res.status(404).json({ message: "לא נמצאה תוצאה עבור תלמיד זה במבחן זה" });
 //         }
+
 //         res.status(200).json({ result });
 //     } catch (error) {
 //         console.error("שגיאה בשליפת תוצאה:", error);
 //         res.status(500).json({ message: "שגיאה בשליפת תוצאה", error });
 //     }
 // }
-
-
 
 // async function createResultTest(req, res) {
 //     try {
@@ -105,67 +144,94 @@
 //     }
 // }
 
-// module.exports = { createResultTest };
-
-
-
-// module.exports = { TestCheck ,getStudentTestResult,createResultTest};
-
+// module.exports = { TestCheck, getStudentTestResult, createResultTest };
 
 
 const Result = require('../models/ResultTestsModels');
 const Test = require('../models/TestModels');
+const mongoose = require('mongoose');
 
-async function TestCheck(req, res) {  // בודקת את המבחן
+async function TestCheck(req, res) {
     try {
         const { TestId, studentId, answers } = req.body;
 
-        // בדיקה שהמשתנים קיימים
-        if (!TestId || !studentId || !answers) {
-            return res.status(400).json({ message: "חסר מידע - יש לוודא ששלחת את כל השדות הנדרשים" });
+        console.log("📥 קלט שהתקבל:", JSON.stringify(req.body, null, 2));
+
+        if (!TestId || !studentId || !answers || !Array.isArray(answers) || answers.length === 0) {
+            return res.status(400).json({ message: "❌ חסר מידע - יש לוודא ששלחת את כל השדות הנדרשים" });
         }
 
-        // שליפת המבחן מהמסד נתונים
-        const test = await Test.findById(TestId.trim());
-        if (!test) return res.status(404).json({ message: "מבחן לא נמצא" });
+        const testId = new mongoose.Types.ObjectId(TestId);
+        const studentObjectId = new mongoose.Types.ObjectId(studentId);
+        const formattedAnswers = answers.map(answer => ({
+            questionId: new mongoose.Types.ObjectId(answer.questionId),
+            selectedOptionIndex: answer.selectedOptionIndex
+        }));
 
-        // קביעת משקל כל שאלה
+        const test = await Test.findById(testId);
+        if (!test) {
+            console.log("⚠️ מבחן לא נמצא:", TestId);
+            return res.status(404).json({ message: "❌ מבחן לא נמצא במסד הנתונים" });
+        }
+
+        console.log("✅ מבחן נמצא:", testId);
+        console.log("📌 מספר שאלות במבחן:", test.questions.length);
+
         const totalQuestions = test.questions.length;
         const pointsPerQuestion = 100 / totalQuestions;
         let score = 0;
 
-        // יצירת מערך תשובות מסודר
-        const studentAnswers = new Array(totalQuestions).fill(null);
-        answers.forEach((answer) => {
-            studentAnswers[answer.questionIndex] = answer.selectedOption || null;
-        });
+        formattedAnswers.forEach(answer => {
+            const question = test.questions.find(q => q._id.toString() === answer.questionId.toString());
 
-        // חישוב הציון
-        test.questions.forEach((question, index) => {
-            if (studentAnswers[index] === question.correctAnswer) {
-                score += pointsPerQuestion;
+            if (!question) {
+                console.log(`⚠️ שאלה לא נמצאה במבחן: ${answer.questionId}`);
+                return;
+            }
+
+            console.log(`✅ שאלה ${question._id} נמצאה!`);
+            console.log(`🎯 תשובה נכונה: ${question.correctAnswer}`);
+            console.log(`📝 תשובה שנבחרה: ${answer.selectedOptionIndex}`);
+
+            // בדיקה האם התשובה היא מספר (אינדקס) או טקסט
+            if (typeof question.correctAnswer === "number") {
+                if (question.correctAnswer === answer.selectedOptionIndex) {
+                    console.log("✔️ תשובה נכונה! מוסיף נקודות");
+                    score += pointsPerQuestion;
+                } else {
+                    console.log("❌ תשובה שגויה");
+                }
+            } else if (typeof question.correctAnswer === "string") {
+                const correctAnswerIndex = question.options.indexOf(question.correctAnswer);
+                if (correctAnswerIndex === answer.selectedOptionIndex) {
+                    console.log("✔️ תשובה נכונה! מוסיף נקודות");
+                    score += pointsPerQuestion;
+                } else {
+                    console.log("❌ תשובה שגויה");
+                }
+            } else {
+                console.log("⚠️ שגיאה: `correctAnswer` לא בפורמט תקין!", question.correctAnswer);
             }
         });
 
-        // עיגול הציון לשתי ספרות אחרי הנקודה
         score = Math.round(score * 100) / 100;
+        console.log("🏆 ציון סופי:", score);
 
-        // שמירת התוצאה במסד נתונים
         const result = new Result({
-            TestId, 
-            studentId, 
-            score, 
-            answers: studentAnswers.map((answer, index) => ({
-                questionIndex: index,
-                selectedOption: answer || "לא נבחרה תשובה"
-            }))
+            TestId: testId,
+            studentId: studentObjectId,
+            answers: formattedAnswers,
+            Mark: score
         });
 
+        console.log("📤 שמירת תוצאה במסד הנתונים:", result);
+
         await result.save();
-        res.status(201).json({ message: "תוצאה נשמרה בהצלחה", result });
+        res.status(201).json({ message: "✅ תוצאה נשמרה בהצלחה", result });
+
     } catch (error) {
-        console.error("שגיאה בשמירת התוצאה:", error);
-        res.status(500).json({ message: "שגיאה בשמירת התוצאה", error });
+        console.error("❌ שגיאה בשמירת התוצאה:", error);
+        res.status(500).json({ message: "❌ שגיאה בשמירת התוצאה", error });
     }
 }
 
@@ -173,21 +239,19 @@ async function getStudentTestResult(req, res) {
     try {
         const { studentId, TestId } = req.params;
 
-        // בדיקה האם הפרמטרים קיימים
         if (!studentId || !TestId) {
-            return res.status(400).json({ message: "יש לספק מזהה תלמיד ומזהה מבחן" });
+            return res.status(400).json({ message: "❌ יש לספק מזהה תלמיד ומזהה מבחן" });
         }
 
-        // שליפת התוצאה ממסד הנתונים
-        const result = await Result.findOne({ studentId, TestId: TestId });
+        const result = await Result.findOne({ studentId, TestId });
         if (!result) {
-            return res.status(404).json({ message: "לא נמצאה תוצאה עבור תלמיד זה במבחן זה" });
+            return res.status(404).json({ message: "❌ לא נמצאה תוצאה עבור תלמיד זה במבחן זה" });
         }
 
         res.status(200).json({ result });
     } catch (error) {
-        console.error("שגיאה בשליפת תוצאה:", error);
-        res.status(500).json({ message: "שגיאה בשליפת תוצאה", error });
+        console.error("❌ שגיאה בשליפת תוצאה:", error);
+        res.status(500).json({ message: "❌ שגיאה בשליפת תוצאה", error });
     }
 }
 
@@ -195,24 +259,28 @@ async function createResultTest(req, res) {
     try {
         const { TestId, studentId, answers } = req.body;
 
-        // חיפוש המבחן במסד הנתונים
         const test = await Test.findById(TestId);
         if (!test) {
-            return res.status(404).json({ error: "Test not found. Please check the TestId." });
+            return res.status(404).json({ error: "❌ מבחן לא נמצא. יש לבדוק את TestId." });
         }
 
-        // חישוב הציון
         let correctAnswersCount = 0;
-        test.questions.forEach((question, index) => {
+        test.questions.forEach((question) => {
             const studentAnswer = answers.find(a => a.questionId.toString() === question._id.toString());
-            if (studentAnswer && question.options[studentAnswer.selectedOptionIndex] === question.correctAnswer) {
-                correctAnswersCount++;
+            if (studentAnswer) {
+                if (typeof question.correctAnswer === "number" && question.correctAnswer === studentAnswer.selectedOptionIndex) {
+                    correctAnswersCount++;
+                } else if (typeof question.correctAnswer === "string") {
+                    const correctAnswerIndex = question.options.indexOf(question.correctAnswer);
+                    if (correctAnswerIndex === studentAnswer.selectedOptionIndex) {
+                        correctAnswersCount++;
+                    }
+                }
             }
         });
 
         const finalScore = (correctAnswersCount / test.questions.length) * 100;
 
-        // יצירת אובייקט תוצאה חדש ושמירה במסד הנתונים
         const newResult = new Result({
             TestId,
             studentId,
@@ -223,9 +291,10 @@ async function createResultTest(req, res) {
         await newResult.save();
         res.status(201).json(newResult);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal server error" });
+        console.error("❌ שגיאה:", error);
+        res.status(500).json({ error: "❌ שגיאה פנימית בשרת" });
     }
 }
 
 module.exports = { TestCheck, getStudentTestResult, createResultTest };
+
