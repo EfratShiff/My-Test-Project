@@ -1,7 +1,5 @@
-
-
 require('dotenv').config();  // טוען את קובץ ה-.env
-
+const cors = require("cors");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -17,11 +15,14 @@ const connectDb = process.env.DB_CONNECT;  // כאן אתה שולף את ה-URI
 app.use(bodyParser.json());
 app.use(express.json());
 
++ app.use(cors({ origin: ["http://localhost:3000", "http://localhost:3001"] }));
+
 mongoose.connect(connectDb).then(() => {
     console.log('connected');
 }).catch(err => {
     console.log(err);
 });
+
 app.use("/User", UserRouter);
 app.use("/Test", TestRouter);
 app.use("/Result", ResultTest);

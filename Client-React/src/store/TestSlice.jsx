@@ -15,7 +15,7 @@ const TestSlice = createSlice({
   initialState: initVal,
   reducers: {
     addTest: (state, action) => {
-      const { TestName, LastDate, LimitTest, questions } = action.payload;
+      const { TestName, LastDate, LimitTest, questions} = action.payload;
       // אם לא נמסרו שאלות, נשתמש בערך ברירת מחדל
       const newTest = {TestName, LastDate,LimitTest,questions: questions || 
         [{ question: "", answers: [""], correct: 0, timeLimit: 30 }]
@@ -24,6 +24,7 @@ const TestSlice = createSlice({
     }
   }
 });
+
 
 //update
 export const { addTest } = TestSlice.actions;
