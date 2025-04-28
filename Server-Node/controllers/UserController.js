@@ -40,14 +40,40 @@
 
 // module.exports={createUser,deleteUser}
 
-
+const jwt = require('jsonwebtoken');
 const User = require("../models/UsersModels");
 const bcrypt = require("bcrypt");
 
-async function createUser(req, res) {  // הוספת משתמש חדש
-    let newUser = await new User(req.body);
-    await newUser.save();  // שומר את המשתמש במסד נתונים
-    res.send(newUser);
+// async function createUser(req, res) {  // הוספת משתמש חדש
+//     let newUser = await new User(req.body);
+//     await newUser.save();  // שומר את המשתמש במסד נתונים
+//     res.send(newUser);
+// }
+
+
+
+async function createUser(req, res) {  
+    try {
+        // יצירת משתמש חדש
+        let newUser = await new User(req.body);
+        await newUser.save();  // שומר את המשתמש במסד נתונים
+
+        // יצירת טוקן JWT
+        const token = jwt.sign(
+            { userId: newUser._id },  // payload, כאן אנחנו שולחים את ה-ID של המשתמש
+            process.env.JWT_SECRET,  // המפתח הסודי שלך, יש להחליף אותו במפתח חזק יותר
+            { expiresIn: '1h' }  // תקופת חיים של הטוקן (למשל שעה)
+        );
+
+        // החזרת משתמש עם הטוקן
+        res.status(201).json({
+            user: newUser,
+            token: token
+        });
+
+    } catch (error) {
+        res.status(500).send('Error creating user');
+    }
 }
 
 async function deleteUser(req, res) {
@@ -72,5 +98,47 @@ async function deleteUser(req, res) {
         return res.status(500).json({ message: 'Server error' });
     }
 }
+
+
+
+
+
+// async function deleteUser(req, res) {
+//     const { name, passwordUser } = req.body; // מקבלים את שם המשתמש והסיסמה ב-body
+//     const token = req.header('Authorization')?.replace('Bearer ', ''); // שולף את הטוקן מתוך header
+
+//     try {
+//         // 1. חיפוש המשתמש ב-DB
+//         const user = await User.findOne({ name });
+//         if (!user) {
+//             return res.status(404).json({ message: 'User not found' });
+//         }
+
+//         // 2. השוואת הסיסמה המוצפנת עם bcrypt
+//         const isMatch = await bcrypt.compare(passwordUser, user.password);
+//         if (!isMatch) {
+//             return res.status(400).json({ message: 'Incorrect password' });
+//         }
+
+//         // 3. אימות הטוקן
+//         if (!token) {
+//             return res.status(403).json({ message: 'Access denied, no token provided' });
+//         }
+
+//         // 4. אימות הטוקן
+//         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); // מאמת את הטוקן
+//         if (decoded.id !== user._id.toString()) {
+//             return res.status(403).json({ message: 'Invalid token, access denied' });
+//         }
+
+//         // 5. מחיקת המשתמש
+//         await User.deleteOne({ _id: user._id });
+//         return res.status(200).json({ message: 'User deleted successfully' });
+
+//     } catch (err) {
+//         console.error(err);
+//         return res.status(500).json({ message: 'Server error' });
+//     }
+// }
 
 module.exports = { createUser, deleteUser };
