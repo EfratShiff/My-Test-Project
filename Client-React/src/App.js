@@ -18,34 +18,18 @@ function App() {
    
 
 <div className="App">
-{/* <AppBar /> */}
+<AppBar />
       <Suspense fallback="loading...">
         <Routes>
-        {/* <Route path='/' element={<HomeLazy />} /> */}
+          <Route path='/Login' element={<LoginLazy />} />
           <Route path='/' element={<AppBarLazy />} />
+          <Route path='/' element={<HomeLazy />} />
           <Route path='/CreateTest' element={<CreateTestLazy />} />
           <Route path='/SolveTest' element={<SolveTestLazy />} />
-          <Route path='/Login' element={<LoginLazy />} />
+          {/* <Route path='/Home' element={<HomeLazy />} /> */}
          </Routes>
       </Suspense>
       </div>
-
-{/* 
-<div className="App">
-  <AppBar />
-  <Suspense fallback="loading...">
-    <Routes>
-      <Route path='/' element={<HomeLazy />} />
-      <Route path='/CreateTest' element={<CreateTestLazy />} />
-      <Route path='/SolveTest' element={<SolveTestLazy />} />
-      <Route path='/Login' element={<LoginLazy />} />
-    </Routes>
-  </Suspense>
-</div> */}
-
-
-
-
     </>
   );
 }
