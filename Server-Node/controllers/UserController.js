@@ -77,8 +77,6 @@ const bcrypt = require("bcrypt");
 // }
 
 
-const bcrypt = require('bcrypt');
-
 async function createUser(req, res) {  
     try {
         const { name, email, password, role } = req.body;
