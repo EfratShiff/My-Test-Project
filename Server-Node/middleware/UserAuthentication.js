@@ -1,16 +1,35 @@
-// const jwt = require('jsonwebtoken');
+// authMiddleware.js
+const jwt = require('jsonwebtoken');
 
-// function authenticateToken(req, res, next) {
-//     const token = req.header('Authorization')?.replace('Bearer ', ''); // מקבל את הטוקן מהכותרת של הבקשה
-//     if (!token) return res.status(403).send('Access denied'); // אם אין טוקן
+function authorizeRoles(...allowedRoles) {
+    return (req, res, next) => {
+      const token = req.headers.authorization?.split(' ')[1];
+      console.log('📦 Token received:', token);
+  
+      if (!token) {
+        console.log('⛔ No token provided');
+        return res.status(401).json({ error: 'No token provided' });
+      }
+  
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('🔑 Decoded token:', decoded);
+  
+        req.user = decoded;
+  
+        if (!allowedRoles.includes(decoded.role)) {
+          console.log('❌ Access denied for role:', decoded.role);
+          return res.status(403).json({ error: 'Access denied' });
+        }
+  
+        console.log('✅ Access granted for role:', decoded.role);
+        next();
+      } catch (err) {
+        console.log('❗ Invalid token:', err.message);
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+    };
+  }
+  
 
-//     try {
-//         const decoded = jwt.verify(token, process.env.JWT_SECRET); // מאמת את הטוקן
-//         req.user = decoded; // שומר את המידע של המשתמש ב-req.user
-//         next(); // אם הטוקן תקין, ממשיכים לפונקציה הבאה
-//     } catch (error) {
-//         res.status(400).send('Invalid token'); // אם הטוקן לא תקין
-//     }
-// }
-
-// module.exports = authenticateToken;
+module.exports = authorizeRoles;
