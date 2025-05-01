@@ -3,7 +3,7 @@ import axios from "axios";
 const SolveTest = () => {
   const deleteTest = async () => {
     try {
-      const response = await axios.delete('http://localhost:8080/Test/deleteTest/מבחן מתכונת', {
+      const response = await axios.delete('http://localhost:8080/Test/deleteTest/בדיקה', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

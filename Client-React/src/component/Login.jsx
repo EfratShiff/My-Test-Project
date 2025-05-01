@@ -106,41 +106,41 @@ const Login = () => {
     const onLoginSubmit = async (data) => {
         try {
             setPasswordError(""); // ננקה שגיאה ישנה
-            console.log(localStorage.getItem('token'));
-            console.log( JSON.parse(atob(localStorage.getItem('token').split('.')[1])))
-
+    
             const res = await axios.post('http://localhost:8080/User/getUser', data);
             const token = res.data.token;
-
+            console.log(token);
+    
             if (token) {
                 localStorage.setItem('token', token);
                 alert("התחברת בהצלחה!");
-                navigate('/'); // מעבר לדף הבית
+                navigate('/'); // ניווט לדף הבית
             }
         } catch (err) {
+            // setPasswordError(""); // במקרה של שגיאה, נוודא שננקה את השגיאה הקודמת
+    
             if (err.response && err.response.data && err.response.data.error) {
                 const message = err.response.data.error;
-
+    
                 if (message === "Invalid password") {
                     setPasswordError("הסיסמה שגויה, נסה שוב.");
                     setValue("password", ""); // מאפס רק את שדה הסיסמה
                     return;
                 }
-
+    
                 if (message === "User not found") {
                     alert("האימייל לא קיים במערכת.");
                     setShowRegister(true);
                     return;
                 }
-
+    
                 alert("שגיאה מהשרת: " + message);
             } else {
                 alert("שגיאה כללית");
             }
-
-            console.error(err);
         }
     };
+    
 
     const onRegisterSubmit = async (data) => {
         try {

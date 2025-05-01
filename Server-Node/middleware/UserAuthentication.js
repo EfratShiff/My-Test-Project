@@ -1,4 +1,4 @@
-// middleware/authMiddleware.js
+// middleware/authUser authentication middleware.js
 
 const jwt = require('jsonwebtoken');
 
@@ -24,9 +24,6 @@ function checkRole(allowedRoles) {
     };
 }
 
-module.exports = {
-    authenticateToken,
-    checkRole,
-};
+module.exports = {authenticateToken,checkRole,};
 
 
