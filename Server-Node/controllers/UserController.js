@@ -43,48 +43,12 @@
 const jwt = require('jsonwebtoken');
 const User = require("../models/UsersModels");
 const bcrypt = require("bcrypt");
-
-// async function createUser(req, res) {  // הוספת משתמש חדש
-//     let newUser = await new User(req.body);
-//     await newUser.save();  // שומר את המשתמש במסד נתונים
-//     res.send(newUser);
-// }
-
-
-
-// async function createUser(req, res) {  
-//     try {
-//         // יצירת משתמש חדש
-        
-//         let newUser = await new User(req.body);
-//         await newUser.save();  // שומר את המשתמש במסד נתונים
-
-//         const token = jwt.sign(
-//             { userId: newUser._id, role: newUser.role }, // ⬅️ מוסיפים role
-//             process.env.JWT_SECRET,
-//             { expiresIn: '1h' }
-//           );
-
-//         // החזרת משתמש עם הטוקן
-//         res.status(201).json({
-//             user: newUser,
-//             token: token
-//         });
-
-//     } catch (error) {
-//         res.status(500).send('Error creating user');
-//     }
-// }
-
-
 async function createUser(req, res) {  
     try {
         const { name, email, password, role } = req.body;
-
         // הצפנת הסיסמה
         const saltRounds = 10;  // מספר סיבובי ההצפנה
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-
         // יצירת משתמש עם סיסמה מוצפנת
         const newUser = new User({
             name,
@@ -92,15 +56,13 @@ async function createUser(req, res) {
             password: hashedPassword, // משתמשים בסיסמה המוצפנת
             role
         });
-
         // שמירת המשתמש במסד נתונים
         await newUser.save();
-
         // יצירת טוקן
         const token = jwt.sign(
             { userId: newUser._id, role: newUser.role }, // כולל role
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '10h' }
         );
 
         // החזרת הנתונים עם הטוקן

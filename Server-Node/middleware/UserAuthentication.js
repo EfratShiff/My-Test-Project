@@ -1,35 +1,32 @@
-// authMiddleware.js
+// middleware/authMiddleware.js
+
 const jwt = require('jsonwebtoken');
 
-function authorizeRoles(...allowedRoles) {
-    return (req, res, next) => {
-      const token = req.headers.authorization?.split(' ')[1];
-      console.log('📦 Token received:', token);
-  
-      if (!token) {
-        console.log('⛔ No token provided');
-        return res.status(401).json({ error: 'No token provided' });
-      }
-  
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('🔑 Decoded token:', decoded);
-  
-        req.user = decoded;
-  
-        if (!allowedRoles.includes(decoded.role)) {
-          console.log('❌ Access denied for role:', decoded.role);
-          return res.status(403).json({ error: 'Access denied' });
-        }
-  
-        console.log('✅ Access granted for role:', decoded.role);
-        next();
-      } catch (err) {
-        console.log('❗ Invalid token:', err.message);
-        return res.status(401).json({ error: 'Invalid token' });
-      }
-    };
-  }
-  
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-module.exports = authorizeRoles;
+    if (!token) return res.status(401).json({ message: 'Missing token' });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: 'Invalid token' });
+        req.user = user;
+        next();
+    });
+}
+
+function checkRole(allowedRoles) {
+    return (req, res, next) => {
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+        next();
+    };
+}
+
+module.exports = {
+    authenticateToken,
+    checkRole,
+};
+
+

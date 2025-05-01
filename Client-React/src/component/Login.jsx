@@ -106,6 +106,8 @@ const Login = () => {
     const onLoginSubmit = async (data) => {
         try {
             setPasswordError(""); // ננקה שגיאה ישנה
+            console.log(localStorage.getItem('token'));
+            console.log( JSON.parse(atob(localStorage.getItem('token').split('.')[1])))
 
             const res = await axios.post('http://localhost:8080/User/getUser', data);
             const token = res.data.token;
@@ -142,8 +144,15 @@ const Login = () => {
 
     const onRegisterSubmit = async (data) => {
         try {
-            const res = await axios.post('http://localhost:8080/User/createUser', data);
-            const token = res.data.token;
+            // const res = await axios.post('http://localhost:8080/User/createUser', data);
+            // const token = res.data.token;
+
+            const token = localStorage.getItem('token');
+const res = await axios.post('http://localhost:8080/User/createUser', data,{
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
+});
 
             if (token) {
                 localStorage.setItem('token', token);
@@ -153,7 +162,9 @@ const Login = () => {
                 navigate('/'); // מעבר לדף הבית אחרי רישום
             }
         } catch (err) {
-            console.error("שגיאה בהרשמה", err);
+            alert("שגיאה בהרשמה", err);
+            console.log(err);
+            
         }
     };
 
