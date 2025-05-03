@@ -18,6 +18,9 @@ return(
           <Button color="inherit" component={Link} to="/" sx={{ fontSize: 18 }}>
             בית
           </Button>
+          <Button color="inherit" component={Link} to="/ViewTests" sx={{ fontSize: 18 }}>
+            צפייה במבחנים 
+          </Button>
     </>
 )
 }

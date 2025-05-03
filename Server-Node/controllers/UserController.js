@@ -99,8 +99,22 @@ async function deleteUser(req, res) {
     }
 }
 
+async function getUserById  (req, res) {
+const userId = req.params.id; // מקבלים את ה-ID מה-URL
 
-
+    try {
+        const user = await User.findById(userId); // מחפשים את המשתמש לפי ה-ID
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        return res.status(200).json(user); // מחזירים את פרטי המשתמש
+}
+    
+        catch (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Server error' });
+        }
+}
 async function getUser(req, res) {
     const { email, password } = req.body;
   
@@ -166,4 +180,4 @@ async function getUser(req, res) {
 //     }
 // }
 
-module.exports = { createUser, deleteUser,getUser };
+module.exports = { createUser, deleteUser,getUser,getUserById };

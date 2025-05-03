@@ -10,6 +10,7 @@ const CreateTestLazy = React.lazy(() => import("./component/CreateTest"))
 const SolveTestLazy = React.lazy(() => import("./component/SolveTest"))
 const AppBarLazy = React.lazy(() => import("./component/AppBar"))
 const HomeLazy = React.lazy(() => import("./component/Home"))
+const ViewTestsLazy = React.lazy(() => import("./component/ViewTests"))
 
 
 function App() {
@@ -25,7 +26,8 @@ function App() {
           <Route path='/' element={<AppBarLazy />} />
           <Route path='/' element={<HomeLazy />} />
           <Route path='/CreateTest' element={<CreateTestLazy />} />
-          <Route path='/SolveTest' element={<SolveTestLazy />} />
+          <Route path='/CreateTest' element={<CreateTestLazy />} />
+          <Route path='/ViewTests' element={<ViewTestsLazy />} />
           {/* <Route path='/Home' element={<HomeLazy />} /> */}
          </Routes>
       </Suspense>
