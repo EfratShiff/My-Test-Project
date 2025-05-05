@@ -10,7 +10,11 @@ const CreateTestLazy = React.lazy(() => import("./component/CreateTest"))
 const SolveTestLazy = React.lazy(() => import("./component/SolveTest"))
 const AppBarLazy = React.lazy(() => import("./component/AppBar"))
 const HomeLazy = React.lazy(() => import("./component/Home"))
+<<<<<<< HEAD
 const ManagerMenuLazy = React.lazy(() => import("./component/ManagerMenu"));
+=======
+const ViewTestsLazy = React.lazy(() => import("./component/ViewTests"))
+>>>>>>> 6fd93c3eb25d43844e122abe8a4d8d12bf6791eb
 
 
 function App() {
@@ -28,6 +32,8 @@ function App() {
           <Route path='/CreateTest' element={<CreateTestLazy />} />
           <Route path='/SolveTest' element={<SolveTestLazy />} />
           <Route path="/ManagerMenu" element={<ManagerMenuLazy />} />
+          <Route path='/CreateTest' element={<CreateTestLazy />} />
+          <Route path='/ViewTests' element={<ViewTestsLazy />} />
           {/* <Route path='/Home' element={<HomeLazy />} /> */}
          </Routes>
       </Suspense>

@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useEffect, useState } from "react";
+
 
 const SolveTest = () => {
   const deleteTest = async () => {
@@ -20,6 +22,9 @@ const SolveTest = () => {
      console.log( JSON.parse(atob(localStorage.getItem('token').split('.')[1])))
     }
   };
+ 
+     
+
 
   return (
     <div>
