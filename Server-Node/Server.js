@@ -15,7 +15,7 @@ const connectDb = process.env.DB_CONNECT;  // כאן אתה שולף את ה-URI
 app.use(bodyParser.json());
 app.use(express.json());
 
-+ app.use(cors({ origin: ["http://localhost:3000", "http://localhost:3001"] }));
+app.use(cors({ origin: ["http://localhost:3000", "http://localhost:3001"] }));
 
 mongoose.connect(connectDb).then(() => {
     console.log('connected');

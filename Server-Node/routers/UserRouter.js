@@ -21,6 +21,8 @@ const router = express.Router()
 const {createUser,deleteUser,getUser}= require("../controllers/UserController")
 // const UserAuthentication = require('../middleware/UserAuthentication');
 const { authenticateToken, checkRole } = require('../middleware/UserAuthentication');
+const checkManagerRole = require('../middleware/checkManagerRole');
+
 
 router.post("/createUser"
     , authenticateToken, checkRole
