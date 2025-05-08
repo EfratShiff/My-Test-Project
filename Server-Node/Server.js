@@ -1,4 +1,4 @@
-require('dotenv').config();  // טוען את קובץ ה-.env
+require('dotenv').config(); 
 const cors = require("cors");
 const express = require("express");
 const app = express();
@@ -11,7 +11,7 @@ const ResultTest = require("./routers/ResultTestsRoter")
 
 const bodyParser = require("body-parser")
 
-const connectDb = process.env.DB_CONNECT;  // כאן אתה שולף את ה-URI מה-ENV
+const connectDb = process.env.DB_CONNECT;  
 app.use(bodyParser.json());
 app.use(express.json());
 

@@ -3,16 +3,13 @@ import { useEffect, useState } from "react";
 
 const ViewTests = () => {
   const [tests, setTests] = useState([]);
-  const [teachersNames, setTeachersNames] = useState({});  // אחסון שמות המורים
+  const [teachersNames, setTeachersNames] = useState({});  
 
-  // שליפת המבחנים
   useEffect(() => {
     const fetchTests = async () => {
       try {
         const response = await axios.get("http://localhost:8080/Test/getAllTest", {
-          // headers: {
-          //   Authorization: `Bearer ${localStorage.getItem('token')}`
-          // }
+        
         });
         console.log("response:", response.data);
         setTests(response.data);
@@ -25,30 +22,29 @@ const ViewTests = () => {
     fetchTests();
   }, []);
 
-  // שליפת המורים לאחר שליפת המבחנים
   useEffect(() => {
     const fetchTeachers = async () => {
       if (tests.length > 0) {
-        const ids = [...new Set(tests.map(test => test.teacherId))]; // teacherId ייחודיים בלבד
+        const ids = [...new Set(tests.map(test => test.teacherId))]; 
         const names = {};
 
         for (const id of ids) {
           if (!id) continue;
           try {
             const response = await axios.get(`http://localhost:8080/User/getUserById/${id}`);
-            names[id] = response.data.name || "ללא שם";  // תוודא איך בדיוק בנוי ה־response שלך
+            names[id] = response.data.name || "ללא שם";  
           } catch (err) {
             console.error(`שגיאה בשליפת מורה ${id}:`, err);
             names[id] = "שגיאה";
           }
         }
 
-        setTeachersNames(names); // עדכון שמות המורים
+        setTeachersNames(names); 
       }
     };
 
     fetchTeachers();
-  }, [tests]);  // הריצה תתבצע כאשר tests משתנה
+  }, [tests]);  
 
   return (
     <div>
@@ -57,7 +53,7 @@ const ViewTests = () => {
         <div key={index}>
           <h2>{test.title}</h2>
           <p>הגבלת זמן : {test.timeLimit} דקות</p>
-          <p>שם מורה: {teachersNames[test.teacherId] || "טעינה..."}</p> {/* מציג את שם המורה */}
+          <p>שם מורה: {teachersNames[test.teacherId] || "טעינה..."}</p> 
         </div>
       ))}
     </div>

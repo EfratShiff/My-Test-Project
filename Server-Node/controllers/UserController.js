@@ -5,26 +5,21 @@ const bcrypt = require("bcrypt");
 async function createUser(req, res) {  
     try {
         const { name, email, password, role } = req.body;
-        // הצפנת הסיסמה
-        const saltRounds = 10;  // מספר סיבובי ההצפנה
+        const saltRounds = 10; 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        // יצירת משתמש עם סיסמה מוצפנת
         const newUser = new User({
             name,
             email,
-            password: hashedPassword, // משתמשים בסיסמה המוצפנת
+            password: hashedPassword, 
             role
         });
-        // שמירת המשתמש במסד נתונים
         await newUser.save();
-        // יצירת טוקן
         const token = jwt.sign(
-            { userId: newUser._id, role: newUser.role }, // כולל role
+            { userId: newUser._id, role: newUser.role }, 
             process.env.JWT_SECRET,
             { expiresIn: '10h' }
         );
 
-        // החזרת הנתונים עם הטוקן
         res.status(201).json({
             user: newUser,
             token: token
@@ -36,7 +31,7 @@ async function createUser(req, res) {
 }
 
 async function deleteUser(req, res) {
-    const { name, passwordUser } = req.params;
+    const { name, password } = req.params;
 
     try {
         const user = await User.findOne({ name });
@@ -44,12 +39,10 @@ async function deleteUser(req, res) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // השוואת הסיסמה
-        if (passwordUser !== user.password) {
+        if (!await bcrypt.compare(password, user.password)) {
             return res.status(400).json({ message: 'Incorrect password' });
         }
 
-        // מחיקת המשתמש אם הסיסמה תואמת
         await User.deleteOne({ name });
         return res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
@@ -59,14 +52,13 @@ async function deleteUser(req, res) {
 }
 
 async function getUserById  (req, res) {
-const userId = req.params.id; // מקבלים את ה-ID מה-URL
-
+const userId = req.params.id; 
     try {
-        const user = await User.findById(userId); // מחפשים את המשתמש לפי ה-ID
+        const user = await User.findById(userId); 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        return res.status(200).json(user); // מחזירים את פרטי המשתמש
+        return res.status(200).json(user); 
 }
     
         catch (err) {
@@ -74,6 +66,39 @@ const userId = req.params.id; // מקבלים את ה-ID מה-URL
             return res.status(500).json({ message: 'Server error' });
         }
 }
+
+
+
+
+
+
+
+
+
+
+async function getAllUser(req, res) {
+    try {
+        // חפש את כל המשתמשים במסד הנתונים
+        let users = await User.find(); // כאן צריך לשמור את התוצאה במשתנה users
+        console.log("Users: ", users); // הדפס את המשתמשים
+
+        // אם לא נמצאו משתמשים, החזר שגיאה 404
+        if (!users || users.length === 0) {
+            return res.status(404).json({ message: 'No users found' });
+        }
+
+        // החזר את המשתמשים כתגובה עם סטטוס 200
+        res.status(200).json(users); // תשלח את המידע על המשתמשים
+    } catch (error) {
+        console.log('Error:', error);
+        // החזר שגיאה 500 אם קרתה תקלה
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+
+
+
 async function getUser(req, res) {
     const { email, password, roleToCheck } = req.body; // נוסיף את roleToCheck מהלקוח
 
@@ -103,4 +128,4 @@ async function getUser(req, res) {
 
 
 
-module.exports = { createUser, deleteUser,getUser,getUserById };
+module.exports = { createUser, deleteUser,getUser,getUserById,getAllUser };

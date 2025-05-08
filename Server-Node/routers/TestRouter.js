@@ -33,7 +33,6 @@ console.log("router");
 router.post("/createTest",createTest);
 router.get("/getTest/:title", getTest); 
 router.get("/getAllTest/", getAllTest);  
-// router.delete("/deleteTest/:title",deleteTest);
 router.delete("/deleteTest/:title", authenticateToken, checkRole(['teacher']),deleteTest);
 router.put("/updateTest/:title",updateTest);
 

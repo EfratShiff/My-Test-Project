@@ -1,130 +1,6 @@
 
 
-// import React, { useState } from 'react';
-// import axios from 'axios';
-// import { useForm } from "react-hook-form";
-// import { useNavigate } from 'react-router-dom';
-
-// const Login = () => {
-//     const navigate = useNavigate();
-
-//     const {
-//         register,
-//         handleSubmit,
-//         setValue,
-//         formState: { errors }
-//     } = useForm();
-
-//     const {
-//         register: registerNew,
-//         handleSubmit: handleRegisterSubmit,
-//         reset
-//     } = useForm();
-
-//     const [showRegister, setShowRegister] = useState(false);
-//     const [passwordError, setPasswordError] = useState("");
-
-//     const onLoginSubmit = async (data) => {
-//         try {
-//             setPasswordError(""); // ננקה שגיאה ישנה
-
-//             const res = await axios.post('http://localhost:8080/User/getUser', data);
-//             const token = res.data.token;
-//             console.log(token);
-
-//             if (token) {
-//                 localStorage.setItem('token', token);
-//                 alert("התחברת בהצלחה!");
-//                 navigate('/'); // ניווט לדף הבית
-//             }
-//         } catch (err) {
-//             // setPasswordError(""); // במקרה של שגיאה, נוודא שננקה את השגיאה הקודמת
-
-//             if (err.response && err.response.data && err.response.data.error) {
-//                 const message = err.response.data.error;
-
-//                 if (message === "Invalid password") {
-//                     setPasswordError("הסיסמה שגויה, נסה שוב.");
-//                     setValue("password", ""); // מאפס רק את שדה הסיסמה
-//                     return;
-//                 }
-
-//                 if (message === "User not found") {
-//                     alert("האימייל לא קיים במערכת.");
-//                     setShowRegister(true);
-//                     return;
-//                 }
-
-//                 alert("שגיאה מהשרת: " + message);
-//             } else {
-//                 alert("שגיאה כללית");
-//             }
-//         }
-//     };
-
-
-//     const onRegisterSubmit = async (data) => {
-//         try {
-//             // const res = await axios.post('http://localhost:8080/User/createUser', data);
-//             // const token = res.data.token;
-
-//             const token = localStorage.getItem('token');
-// const res = await axios.post('http://localhost:8080/User/createUser', data,{
-//     headers: {
-//         Authorization: `Bearer ${token}`
-//     }
-// });
-
-//             if (token) {
-//                 localStorage.setItem('token', token);
-//                 alert("נרשמת בהצלחה!");
-//                 setShowRegister(false);
-//                 reset(); // מנקה את הטופס
-//                 navigate('/'); // מעבר לדף הבית אחרי רישום
-//             }
-//         } catch (err) {
-//             alert("שגיאה בהרשמה", err);
-//             console.log(err);
-
-//         }
-//     };
-
-//     return (
-//         <>
-//             <form onSubmit={handleSubmit(onLoginSubmit)}>
-//                 <input placeholder="אמייל" {...register("email", { required: true })} />
-//                 <input
-//                     placeholder="סיסמה"
-//                     type="password"
-//                     {...register("password", { required: true })}
-//                 />
-//                 {errors.email && <span>יש להזין אימייל</span>}<br />
-//                 {errors.password && <span>יש להזין סיסמה</span>}<br />
-//                 {passwordError && <span style={{ color: 'red' }}>{passwordError}</span>}<br />
-//                 <input type="submit" value="התחברות" />
-//             </form>
-
-//             {showRegister && (
-//                 <form onSubmit={handleRegisterSubmit(onRegisterSubmit)} style={{ marginTop: '20px' }}>
-//                     <h3>רישום משתמש חדש</h3>
-//                     <input placeholder="שם משתמש" {...registerNew("name", { required: true })} />
-//                     <input placeholder="אמייל" {...registerNew("email", { required: true })} />
-//                     <input placeholder="סיסמה" type="password" {...registerNew("password", { required: true })} />
-//                     <input placeholder="תפקיד (student/teacher)" {...registerNew("role", { required: true })} />
-//                     <input type="submit" value="רישום" />
-//                 </form>
-//             )}
-//         </>
-//     );
-// };
-
-// export default Login;
-
-
-
-
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useForm } from "react-hook-form";
 import { useNavigate } from 'react-router-dom';
@@ -145,9 +21,31 @@ const Login = () => {
         formState: { errors: adminErrors }
     } = useForm();
 
+    const {
+        register: registerNewUser,
+        handleSubmit: handleAddUser,
+        reset: resetAddUser,
+        formState: { errors: addUserErrors }
+    } = useForm();
+
+    const {
+        register: registerDeleteUser,
+        handleSubmit: handleDeleteUser,
+        reset: resetDeleteUser
+    } = useForm();
+
     const [showAdminLogin, setShowAdminLogin] = useState(false);
     const [userNotFound, setUserNotFound] = useState(false);
     const [passwordError, setPasswordError] = useState("");
+    const [isManager, setIsManager] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        if (token && role === 'manager') {
+            setIsManager(true);
+        }
+    }, []);
 
     const onLoginSubmit = async (data) => {
         try {
@@ -157,91 +55,138 @@ const Login = () => {
 
             const res = await axios.post('http://localhost:8080/User/getUser', data);
             const token = res.data.token;
+            const role = res.data.role;
 
             if (token) {
                 localStorage.setItem('token', token);
+                localStorage.setItem('role', role);
                 alert("התחברת בהצלחה!");
-                navigate('/');
+
+                if (role === 'manager') {
+                    alert("ברוך הבא מנהל!");
+                    setIsManager(true);
+                    navigate('/ManagerMenu'); 
+                } else if(role==='student'){
+                    alert("ברוך הבא תלמיד!");
+                    navigate('/StudentMenu'); 
+                }
+                else if(role==='teacher'){
+                    alert("ברוך הבא מורה!");
+                    navigate('/TeacherMenu'); 
+                }
             }
         } catch (err) {
-            if (err.response && err.response.data && err.response.data.error) {
-                const message = err.response.data.error;
+            const message = err.response?.data?.error;
 
-                if (message === "Invalid password") {
-                    setPasswordError("הסיסמה שגויה, נסה שוב.");
-                    setValue("password", "");
-                    return;
-                }
-
-                if (message === "User not found") {
-                    setUserNotFound(true);
-                    return;
-                }
-
-                alert("שגיאה מהשרת: " + message);
+            if (message === "Invalid password") {
+                setPasswordError("הסיסמה שגויה, נסה שוב.");
+                setValue("password", "");
+            } else if (message === "User not found") {
+                setUserNotFound(true);
             } else {
-                alert("שגיאה כללית");
+                alert("שגיאה: " + (message || "בעיה כללית"));
             }
         }
     };
 
     const onAdminLoginSubmit = async (data) => {
-        console.log(data);
         try {
             const res = await axios.post('http://localhost:8080/User/getUser', {
-                name: "מנהל", // אפשר להשאיר, לא מזיק אבל גם לא נדרש
-                email: data.adminUseremail,       // ✅ תיקון
+                name: "מנהל",
+                email: data.adminUseremail,
                 password: data.adminPassword,
-                roleToCheck: "manager"            // ✅ תיקון
+                roleToCheck: "manager"
             });
 
             const token = res.data.token;
-            console.log(token);
             if (token) {
                 localStorage.setItem('token', token);
+                localStorage.setItem('role', 'manager');
+                setIsManager(true);
                 alert("ברוך הבא מנהל!");
-                navigate('/ManagerMenu'); // עדכן בהתאם לדף מנהל שלך
+                navigate('/login');
             }
         } catch (err) {
             alert("שגיאה בכניסת מנהל: " + (err.response?.data?.error || "בעיה כללית"));
         }
     };
 
+    const addUser = async (data) => {
+        alert(JSON.stringify(data));
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('http://localhost:8080/User/createUser', data, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert("המשתמש נוסף בהצלחה");
+            resetAddUser();
+        } catch (err) {
+            alert("שגיאה בהוספת המשתמש: " + (err.response?.data?.error || "שגיאה כללית"));
+        }
+    };
+
+    const deleteUser = async (data) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:8080/User/deleteUser/${data.email}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert("המשתמש נמחק בהצלחה");
+            resetDeleteUser();
+        } catch (err) {
+            alert("שגיאה במחיקת המשתמש: " + (err.response?.data?.error || "שגיאה כללית"));
+        }
+    };
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        setIsManager(false);
+        navigate('/login');
+    };
+
     return (
         <>
-            <form onSubmit={handleSubmit(onLoginSubmit)}>
-                <input placeholder="אמייל" {...register("email", { required: true })} />
-                <input
-                    placeholder="סיסמה"
-                    type="password"
-                    {...register("password", { required: true })}
-                />
-                {errors.email && <span>יש להזין אימייל</span>}<br />
-                {errors.password && <span>יש להזין סיסמה</span>}<br />
-                {passwordError && <span style={{ color: 'red' }}>{passwordError}</span>}<br />
-                <input type="submit" value="התחברות" />
-            </form>
+            {!isManager ? (
+                <>
+                    <form onSubmit={handleSubmit(onLoginSubmit)}>
+                        <h3>כניסה למערכת</h3>
+                        <input placeholder="אימייל" {...register("email", { required: true })} />
+                        <input placeholder="סיסמה" type="password" {...register("password", { required: true })} />
+                        {errors.email && <span>יש להזין אימייל</span>}<br />
+                        {errors.password && <span>יש להזין סיסמה</span>}<br />
+                        {passwordError && <span style={{ color: 'red' }}>{passwordError}</span>}<br />
+                        <input type="submit" value="התחברות" />
+                    </form>
 
-            {userNotFound && (
-                <div style={{ marginTop: '20px' }}>
-                    <p style={{ color: 'red' }}>המשתמש אינו קיים במערכת.</p>
-                    {!showAdminLogin && (
-                        <button type="button" onClick={() => setShowAdminLogin(true)}>
-                            כניסה כמנהל
-                        </button>
+                    {userNotFound && (
+                        <div style={{ marginTop: '20px' }}>
+                            <p style={{ color: 'red' }}>המשתמש אינו קיים במערכת.</p>
+                            {!showAdminLogin && (
+                                <button type="button" onClick={() => setShowAdminLogin(true)}>
+                                    כניסה כמנהל
+                                </button>
+                            )}
+                        </div>
                     )}
-                </div>
-            )}
 
-            {showAdminLogin && (
-                <form onSubmit={handleAdminSubmit(onAdminLoginSubmit)} style={{ marginTop: '20px' }}>
-                    <h3>כניסת מנהל</h3>
-                    <input placeholder="מייל" {...registerAdmin("adminUseremail", { required: true })} />
-                    <input placeholder="סיסמה" type="password" {...registerAdmin("adminPassword", { required: true })} />
-                    {adminErrors.adminUsername && <span>יש להזין שם משתמש</span>}<br />
-                    {adminErrors.adminPassword && <span>יש להזין סיסמה</span>}<br />
-                    <input type="submit" value="כניסה" />
-                </form>
+                    {showAdminLogin && (
+                        <form onSubmit={handleAdminSubmit(onAdminLoginSubmit)} style={{ marginTop: '20px' }}>
+                            <h3>כניסת מנהל</h3>
+                            <input placeholder="מייל" {...registerAdmin("adminUseremail", { required: true })} />
+                            <input placeholder="סיסמה" type="password" {...registerAdmin("adminPassword", { required: true })} />
+                            {adminErrors.adminUseremail && <span>יש להזין מייל</span>}<br />
+                            {adminErrors.adminPassword && <span>יש להזין סיסמה</span>}<br />
+                            <input type="submit" value="כניסה" />
+                        </form>
+                    )}
+                </>
+            ) : (
+                <>
+                    <h2>ממשק ניהול</h2>
+
+                    <button onClick={logout} style={{ marginTop: '20px' }}>התנתקות</button>
+                </>
             )}
         </>
     );
