@@ -1,18 +1,3 @@
-// const express = require("express")
-// const router = express.Router()
-// const {createUser,deleteUser,getUser}= require("../controllers/UserController")
-// const UserAuthentication = require('../middleware/UserAuthentication');
-
-
-// router.post("/createUser",/*UserAuthentication,*/createUser)
-// // router.delete('/deleteUser/:name/:passwordUser', deleteUser);
-// router.post('/getUser', getUser);
-
-// router.delete('/deleteUser', deleteUser);
-
-
-// module.exports= router
-
 
 
 
@@ -24,7 +9,7 @@ const checkManagerRole = require('../middleware/checkManagerRole');
 
 router.get('/getAllUser',  getAllUser); 
 router.post("/createUser", authenticateToken, checkRole(['manager']) , createUser);
-router.delete('/deleteUser/:name/:password', deleteUser);
+router.delete('/deleteUser/:name/:email', deleteUser);
 router.post('/getUser', getUser);
 
 router.delete('/deleteUser', deleteUser);
