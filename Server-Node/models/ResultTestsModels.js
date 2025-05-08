@@ -9,8 +9,8 @@
             }],
             Mark: { 
                 type: Number, 
-                required: false, // לא חובה לשלוח את הציון (החישוב ייעשה אוטומטית)
-                default: 0 // ברירת מחדל - אם לא נשלח, הציון יהיה 0
+                required: false, 
+                default: 0 
             },
             submitDate: { type: Date, default: Date.now } // תאריך ההגשה
         });

@@ -5,16 +5,18 @@ import Login from './component//Login';
 import React, { Suspense }  from 'react';
 import { AppBar } from '@mui/material';
 import { Route, Routes } from 'react-router-dom';
+
 const LoginLazy = React.lazy(() => import("./component/Login"))
 const CreateTestLazy = React.lazy(() => import("./component/CreateTest"))
 const SolveTestLazy = React.lazy(() => import("./component/SolveTest"))
 const AppBarLazy = React.lazy(() => import("./component/AppBar"))
 const HomeLazy = React.lazy(() => import("./component/Home"))
-<<<<<<< HEAD
+
 const ManagerMenuLazy = React.lazy(() => import("./component/ManagerMenu"));
-=======
+
 const ViewTestsLazy = React.lazy(() => import("./component/ViewTests"))
->>>>>>> 6fd93c3eb25d43844e122abe8a4d8d12bf6791eb
+const StudentMenuLazy = React.lazy(() => import("./component/StudentMenu"))
+const TeacherMenuLazy = React.lazy(() => import("./component/TeacherMenu"))
 
 
 function App() {
@@ -23,18 +25,18 @@ function App() {
    
 
 <div className="App">
-<AppBar />
+<HomeLazy />
       <Suspense fallback="loading...">
         <Routes>
           <Route path='/Login' element={<LoginLazy />} />
-          <Route path='/' element={<AppBarLazy />} />
-          <Route path='/' element={<HomeLazy />} />
+          <Route path='/AppBar' element={<AppBarLazy />} />
           <Route path='/CreateTest' element={<CreateTestLazy />} />
           <Route path='/SolveTest' element={<SolveTestLazy />} />
           <Route path="/ManagerMenu" element={<ManagerMenuLazy />} />
           <Route path='/CreateTest' element={<CreateTestLazy />} />
           <Route path='/ViewTests' element={<ViewTestsLazy />} />
-          {/* <Route path='/Home' element={<HomeLazy />} /> */}
+          <Route path='/TeacherMenu' element={<TeacherMenuLazy />} />
+          <Route path='/StudentMenu' element={<StudentMenuLazy />} />
          </Routes>
       </Suspense>
       </div>

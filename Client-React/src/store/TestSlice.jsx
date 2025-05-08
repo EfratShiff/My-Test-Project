@@ -2,10 +2,10 @@ import { createSlice } from '@reduxjs/toolkit';
 const initVal = {
   TestArr: [
     {
-      TestName: "", // שם מבחן
-      LastDate: "", // תאריך אחרון להגשה
-      LimitTest: "", // כמות זמן למבחן
-      questions: [{ question: "", answers: [""], correct: 0, timeLimit: 30 }] // שאלות
+      TestName: "", 
+      LastDate: "", 
+      LimitTest: "", 
+      questions: [{ question: "", answers: [""], correct: 0, timeLimit: 30 }]
     }
   ]
 };
@@ -16,7 +16,6 @@ const TestSlice = createSlice({
   reducers: {
     addTest: (state, action) => {
       const { TestName, LastDate, LimitTest, questions} = action.payload;
-      // אם לא נמסרו שאלות, נשתמש בערך ברירת מחדל
       const newTest = {TestName, LastDate,LimitTest,questions: questions || 
         [{ question: "", answers: [""], correct: 0, timeLimit: 30 }]
       };
@@ -26,6 +25,5 @@ const TestSlice = createSlice({
 });
 
 
-//update
 export const { addTest } = TestSlice.actions;
 export default TestSlice.reducer;
