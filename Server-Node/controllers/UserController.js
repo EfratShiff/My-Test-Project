@@ -31,20 +31,17 @@ async function createUser(req, res) {
 }
 
 async function deleteUser(req, res) {
-    const { name, password } = req.params;
-
+    const { name,email } = req.params; 
+    console.log(name,email);
     try {
-        const user = await User.findOne({ name });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        const NameUser = await User.findOne({ name });
+        console.log(NameUser);
+        
+        if (!NameUser) {
+            return res.status(404).json({ message: 'user not found' });
         }
-
-        if (!await bcrypt.compare(password, user.password)) {
-            return res.status(400).json({ message: 'Incorrect password' });
-        }
-
         await User.deleteOne({ name });
-        return res.status(200).json({ message: 'User deleted successfully' });
+        return res.status(200).json({ message: 'user deleted successfully' });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'Server error' });
