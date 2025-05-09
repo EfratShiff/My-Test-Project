@@ -3,6 +3,7 @@ const Test=require("../models/TestModels")
 const bcrypt = require("bcrypt");
 
 async function createTest(req,res){
+    console.log("תאריך שהתקבל מהקליינט:", req.body.lastDate);
     let newTest = await new Test(req.body)
         await newTest.save()
         res.send(newTest)
@@ -10,22 +11,22 @@ async function createTest(req,res){
 }
 
 async function getTest(req, res) {
-    const { title } = req.params;
-    console.log("title "+title);
-    if (!title) {
-        return res.status(400).json({ message: 'Title parameter is missing' });
+    const { id } = req.params;
+    console.log("ID שהתקבל:", id);
+
+    if (!id) {
+        return res.status(400).json({ message: 'Missing test ID' });
     }
-   
+
     try {
-        let test = await Test.findOne({ title }); 
-         console.log("test"+test);
+        const test = await Test.findById(id);
         if (!test) {
             return res.status(404).json({ message: 'Test not found' });
         }
-        res.status(200).json(test);
-    } catch (error) {
-        console.log('Error:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.json(test);
+    } catch (err) {
+        console.error("שגיאה בשליפת מבחן:", err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
 

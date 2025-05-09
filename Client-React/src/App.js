@@ -31,7 +31,7 @@ function App() {
           <Route path='/Login' element={<LoginLazy />} />
           <Route path='/AppBar' element={<AppBarLazy />} />
           <Route path='/CreateTest' element={<CreateTestLazy />} />
-          <Route path='/SolveTest' element={<SolveTestLazy />} />
+          <Route path='/SolveTest/:testId' element={<SolveTestLazy />} />
           <Route path="/ManagerMenu" element={<ManagerMenuLazy />} />
           <Route path='/CreateTest' element={<CreateTestLazy />} />
           <Route path='/ViewTests' element={<ViewTestsLazy />} />

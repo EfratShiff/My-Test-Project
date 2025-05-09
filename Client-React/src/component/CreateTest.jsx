@@ -1,7 +1,5 @@
 
-
-
-  import React, { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { addTest } from "../store/TestSlice";
@@ -57,8 +55,10 @@ const CreateTest = () => {
   }, [append, fields.length]);
 
   const onSubmit = async (data) => {
+    console.log(data);
     const testData = {
       title: data.TestName,
+      lastDate: data.LastDate,
       questions: data.questions.map((question) => ({
         questionText: question.text,
         options: question.answers,
