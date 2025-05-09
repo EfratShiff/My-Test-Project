@@ -58,7 +58,7 @@ const CreateTest = () => {
     console.log(data);
     const testData = {
       title: data.TestName,
-      lastDate: data.LastDate,
+      astDate: data.LastDate,
       questions: data.questions.map((question) => ({
         questionText: question.text,
         options: question.answers,
