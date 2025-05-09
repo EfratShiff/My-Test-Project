@@ -36,8 +36,8 @@ const ManagerMenu = () => {
       }
       else if (actionType.startsWith("delete")) {
         const role = actionType === "delete-teacher" ? "teacher" : "student";
-        alert(data.name+" " + data.password);
-        await axios.delete(`http://localhost:8080/User/deleteUser/${data.name}/${data.password}`, {
+        alert(data.name+" " + data.email);
+        await axios.delete(`http://localhost:8080/User/deleteUser/${data.name}/${data.email}`, {
         });
       
         alert(`המשתמש בתפקיד ${role} נמחק`);
@@ -49,6 +49,17 @@ const ManagerMenu = () => {
     }
   };
 
+  const AllUsers = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.get('http://localhost:8080/User/getAllUser', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUsers(response.data);
+    } catch (err) {
+      alert("שגיאה בהבאת המשתמשים: " + (err.response?.data?.error || "שגיאה כללית"));
+    }
+  }
   const showForm = !!actionType;
 
   return (
@@ -69,8 +80,8 @@ const ManagerMenu = () => {
       </Button>
       <Button component={Link} to="/ViewTests" sx={{ fontSize: 18 }}>
         צפייה במבחנים
-      </Button> <Button 
-       sx={{ fontSize: 18 }}>
+      </Button>
+       <Button onClick={AllUsers} sx={{ fontSize: 18 }}>
         צפייה בכל המשתמשים
       </Button>
 
@@ -82,16 +93,16 @@ const ManagerMenu = () => {
       </h4>
     
       <input placeholder="שם" {...register("name", { required: true })} />
-    
-      {actionType.includes("add") && (
-        <input placeholder="אימייל" {...register("email", { required: true })} />
-      )}
-    
-      <input
+    {actionType.includes("add") && (
+           <input
         placeholder="סיסמה"
         type="password"
         {...register("password", { required: true })}
       />
+      )}
+    
+    <input placeholder="אימייל" {...register("email", { required: true })} />
+ 
     
       <input type="submit" value="שלח" />
     </form>
