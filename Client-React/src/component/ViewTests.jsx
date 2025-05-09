@@ -178,27 +178,19 @@ const ViewTests = () => {
 
     const decoded = jwtDecode(token);
     const role = decoded.role;
-
     // חפש את המבחן שהמשתמש בחר
     const test = tests.find((test) => test._id === testId);
-    
     // אם המבחן לא נמצא, חזור
     if (!test) {
       alert("לא נמצא מבחן עם מזהה זה.");
       return;
     }
-
     // קבלת התאריך הנוכחי
     const currentDate = new Date();
-    
     // המרת התאריך מהדאטה בייס לאובייקט Date
     const lastDate = new Date(test.lastDate);
-
     // אם התפקיד הוא מורה, אפשר להיכנס תמיד
     if (role === "teacher") {
-      console.log("ההרשאה שלך היא:", role);
-      console.log("Token שנשלח:", token);
-      console.log("נבחר מבחן:", testId);
       navigate(`/SolveTest/${testId}`);
       return; // מורה תמיד יכול לגשת למבחן
     }
@@ -208,11 +200,6 @@ const ViewTests = () => {
       alert("המבחן עבר את תאריך ההגשה. תלמיד לא יכול לגשת למבחן.");
       return; // יצא מהפונקציה אם המבחן עבר
     }
-
-    // אם לא עבר הזמן, תלמיד יכול לגשת
-    console.log("ההרשאה שלך היא:", role);
-    console.log("Token שנשלח:", token);
-    console.log("נבחר מבחן:", testId);
     navigate(`/SolveTest/${testId}`);
   };
 

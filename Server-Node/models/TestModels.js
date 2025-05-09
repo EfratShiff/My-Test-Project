@@ -24,10 +24,10 @@ const TestSchema = new mongoose.Schema({
         questionText: { type: String, required: true }, 
         options: [{ type: String, required: true }], 
         correctAnswer: { type: String, required: true }, 
+        timeLimit: { type: Number, default: 0 }
     }],
-    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    timeLimit: { type: Number, default: 0 },
-    lastDate: { type: Date, required: true } // 👈 זה כל מה שצריך
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },   
+    lastDate: { type: Date, required: true } 
 });
 
 const Test = mongoose.model('TestSchema', TestSchema);

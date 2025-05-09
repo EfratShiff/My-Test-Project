@@ -4,6 +4,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { addTest } from "../store/TestSlice";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import {
   Box,
   Button,
@@ -56,18 +57,22 @@ const CreateTest = () => {
 
   const onSubmit = async (data) => {
     console.log(data);
+    const token = localStorage.getItem("token");
+    const decoded = jwtDecode(token);
+    console.log("decoded.userId" + decoded.userId);
     const testData = {
       title: data.TestName,
-      astDate: data.LastDate,
+      lastDate: data.LastDate,
       questions: data.questions.map((question) => ({
         questionText: question.text,
         options: question.answers,
         correctAnswer: question.answers[question.correct],
+        timeLimit: parseInt(question.timeLimit)
       })),
-      teacherId: "67e529e2364706b1db3763dc",
-      timeLimit: parseInt(data.LimitTest),
+      teacherId: decoded.userId,
     };
     alert(JSON.stringify(testData, null, 2));
+    console.log("testData "+testData);
     try {
       const response = await axios.post('http://localhost:8080/Test/createTest', testData);
       console.log("Test created:", response.data);
@@ -112,13 +117,13 @@ const CreateTest = () => {
             helperText={errors.LastDate && "שדה חובה"}
           />
 
-          <TextField
+          {/* <TextField
             label="כמות זמן למבחן (בדקות)"
             type="number"
             {...register("LimitTest", { required: true })}
             error={!!errors.LimitTest}
             helperText={errors.LimitTest && "שדה חובה"}
-          />
+          /> */}
 
           <Typography variant="h5" mt={4}>
             שאלות
