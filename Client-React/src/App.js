@@ -17,6 +17,7 @@ const ManagerMenuLazy = React.lazy(() => import("./component/ManagerMenu"));
 const ViewTestsLazy = React.lazy(() => import("./component/ViewTests"))
 const StudentMenuLazy = React.lazy(() => import("./component/StudentMenu"))
 const TeacherMenuLazy = React.lazy(() => import("./component/TeacherMenu"))
+const ViewRezultTestLazy = React.lazy(() => import("./component/ViewRezultTest"))
 
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
           <Route path='/ViewTests' element={<ViewTestsLazy />} />
           <Route path='/TeacherMenu' element={<TeacherMenuLazy />} />
           <Route path='/StudentMenu' element={<StudentMenuLazy />} />
+          <Route path='/ViewRezultTest' element={<ViewRezultTestLazy />} />
          </Routes>
       </Suspense>
       </div>

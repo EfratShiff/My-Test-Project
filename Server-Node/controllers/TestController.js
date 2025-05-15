@@ -2,13 +2,19 @@ const Test=require("../models/TestModels")
 
 const bcrypt = require("bcrypt");
 
-async function createTest(req,res){
-    console.log("תאריך שהתקבל מהקליינט:", req.body.lastDate);
-    let newTest = await new Test(req.body)
-        await newTest.save()
-        res.send(newTest)
+async function createTest(req, res) {
+    try {
+        console.log("תאריך שהתקבל מהקליינט:", req.body.lastDate);
+        let newTest = new Test(req.body);
+        await newTest.save();
         console.log("controller");
+        res.send(newTest);
+    } catch (err) {
+        console.error("שגיאה בשמירת מבחן:", err.message);
+        res.status(500).send({ error: "שגיאה ביצירת מבחן חדש" });
+    }
 }
+
 
 async function getTest(req, res) {
     const { id } = req.params;

@@ -15,8 +15,11 @@ import {
   CardContent,
   Stack
 } from "@mui/material";
+import { Navigate ,useNavigate} from "react-router-dom";
 
 const CreateTest = () => {
+  const navigate = useNavigate();
+
   const dispatch = useDispatch();
   const {
     register,
@@ -77,7 +80,8 @@ const CreateTest = () => {
       const response = await axios.post('http://localhost:8080/Test/createTest', testData);
       console.log("Test created:", response.data);
       dispatch(addTest(response.data));
-      alert("המבחן נוצר בהצלחה!");
+      alert("המבחן נוצר בהצלחה!!!!!!!!!!!!!!!");
+      navigate("/TeacherMenu");
     } catch (error) {
       console.error("Error creating test:", error);
       alert(`הייתה שגיאה ביצירת המבחן: ${error.response ? error.response.data : error.message}`);

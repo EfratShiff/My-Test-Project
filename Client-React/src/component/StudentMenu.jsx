@@ -10,7 +10,7 @@ const StudentMenu = () => {
         <Button color="inherit" component={Link} to="/ViewTests" sx={{ fontSize: 18 }}>
               לפתרון מבחן
           </Button> 
-        <Button color="inherit" component={Link} to="/ViewTests" sx={{ fontSize: 18 }}>
+        <Button color="inherit" component={Link} to="/ViewRezultTest" sx={{ fontSize: 18 }}>
             לצפיה בתוצאות המבחנים
           </Button>
         </>
