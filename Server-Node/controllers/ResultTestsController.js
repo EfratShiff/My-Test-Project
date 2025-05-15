@@ -3,6 +3,8 @@ const Test = require('../models/TestModels');
 const mongoose = require('mongoose');
 
 async function TestCheck(req, res) {
+    const [answers, setAnswers] = useState([]);
+
     try {
         const { TestId, studentId, answers } = req.body;
 
@@ -147,5 +149,28 @@ async function createResultTest(req, res) {
     }
 }
 
-module.exports = { TestCheck, getStudentTestResult, createResultTest };
+async function getStudentTestResultByStudentID(req, res) {
+    try {
+      const { studentId } = req.params;
+  
+      if (!studentId) {
+        return res.status(400).json({ message: "יש לספק מזהה תלמיד" });
+      }
+  
+      // שליפת כל התוצאות של תלמיד זה
+      const results = await Result.find({ studentId });
+  
+      if (!results || results.length === 0) {
+        return res.status(404).json({ message: "לא נמצאו תוצאות עבור תלמיד זה" });
+      }
+  
+      res.status(200).json({ results });
+    } catch (error) {
+      console.error("שגיאה בשליפת תוצאות:", error);
+      res.status(500).json({ message: "שגיאה בשליפת תוצאות", error: error.message });
+    }
+  }
+  
+
+module.exports = { TestCheck, getStudentTestResult, createResultTest,getStudentTestResultByStudentID };
 
