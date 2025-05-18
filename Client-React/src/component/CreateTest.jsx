@@ -1,100 +1,82 @@
-
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { addTest } from "../store/TestSlice";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  MenuItem,
-  Card,
-  CardContent,
-  Stack
+  Box, Button, TextField, Typography, MenuItem,
+  Card, CardContent, Stack, Dialog, DialogTitle, DialogContent
 } from "@mui/material";
-import { Navigate ,useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import SignatureCanvas from "react-signature-canvas";
 
 const CreateTest = () => {
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const [openSignatureDialog, setOpenSignatureDialog] = useState(false);
+  const sigCanvasRef = useRef();
+
+  const { register, control, handleSubmit, formState: { errors }, getValues } = useForm({
     defaultValues: {
       TestName: "",
       LastDate: "",
       LimitTest: "",
       questions: [
-        {
-          text: "",
-          answers: ["", "", "", ""],
-          correct: 0,
-          timeLimit: 30,
-        },
+        { text: "", answers: ["", "", "", ""], correct: 0, timeLimit: 30 },
       ],
     },
   });
 
-  const { fields, append } = useFieldArray({
-    control,
-    name: "questions",
-  });
+  const { fields, append } = useFieldArray({ control, name: "questions" });
 
   useEffect(() => {
     if (fields.length === 0) {
-      append({
-        text: "",
-        answers: ["", "", "", ""],
-        correct: 0,
-        timeLimit: 30,
-      });
+      append({ text: "", answers: ["", "", "", ""], correct: 0, timeLimit: 30 });
     }
   }, [append, fields.length]);
 
-  const onSubmit = async (data) => {
-    console.log(data);
-    const token = localStorage.getItem("token");
-    const decoded = jwtDecode(token);
-    console.log("decoded.userId" + decoded.userId);
-    const testData = {
-      title: data.TestName,
-      lastDate: data.LastDate,
-      questions: data.questions.map((question) => ({
-        questionText: question.text,
-        options: question.answers,
-        correctAnswer: question.answers[question.correct],
-        timeLimit: parseInt(question.timeLimit)
-      })),
-      teacherId: decoded.userId,
-    };
-    alert(JSON.stringify(testData, null, 2));
-    console.log("testData "+testData);
+  const handleSignatureSave = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/Test/createTest', testData);
-      console.log("Test created:", response.data);
+      const trimmedCanvas = sigCanvasRef.current.getTrimmedCanvas();
+      const signatureImage = trimmedCanvas.toDataURL("image/png");
+      console.log("חתימה דיגיטלית:", signatureImage);
+
+      const data = getValues();
+      const token = localStorage.getItem("token");
+      const decoded = jwtDecode(token);
+
+      const testData = {
+        title: data.TestName,
+        lastDate: data.LastDate,
+        questions: data.questions.map((q) => ({
+          questionText: q.text,
+          options: q.answers,
+          correctAnswer: q.answers[q.correct],
+          timeLimit: parseInt(q.timeLimit),
+        })),
+        teacherId: decoded.userId,
+        signature: signatureImage,
+      };
+
+      const response = await axios.post("http://localhost:8080/Test/createTest", testData);
       dispatch(addTest(response.data));
-      alert("המבחן נוצר בהצלחה!!!!!!!!!!!!!!!");
+      alert("המבחן נוצר בהצלחה!");
       navigate("/TeacherMenu");
     } catch (error) {
-      console.error("Error creating test:", error);
-      alert(`הייתה שגיאה ביצירת המבחן: ${error.response ? error.response.data : error.message}`);
+      console.error("שגיאה:", error);
+      alert(`שגיאה ביצירת המבחן: ${error?.response?.data || error.message}`);
+    } finally {
+      setOpenSignatureDialog(false);
     }
   };
 
   const addQuestion = () => {
-    append({
-      text: "",
-      answers: ["", "", "", ""],
-      correct: 0,
-      timeLimit: 30,
-    });
+    append({ text: "", answers: ["", "", "", ""], correct: 0, timeLimit: 30 });
+  };
+
+  const handleTestSubmit = () => {
+    setOpenSignatureDialog(true);
   };
 
   return (
@@ -102,94 +84,50 @@ const CreateTest = () => {
       <Typography variant="h4" align="center" gutterBottom>
         יצירת מבחן
       </Typography>
-
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(handleTestSubmit)}>
         <Stack spacing={2}>
-          <TextField
-            label="שם מבחן"
-            {...register("TestName", { required: true })}
-            error={!!errors.TestName}
-            helperText={errors.TestName && "שדה חובה"}
-          />
-
-          <TextField
-            label="תאריך אחרון להגשה"
-            type="datetime-local"
-            InputLabelProps={{ shrink: true }}
-            {...register("LastDate", { required: true })}
-            error={!!errors.LastDate}
-            helperText={errors.LastDate && "שדה חובה"}
-          />
-
-          {/* <TextField
-            label="כמות זמן למבחן (בדקות)"
-            type="number"
-            {...register("LimitTest", { required: true })}
-            error={!!errors.LimitTest}
-            helperText={errors.LimitTest && "שדה חובה"}
-          /> */}
-
-          <Typography variant="h5" mt={4}>
-            שאלות
-          </Typography>
-
+          <TextField label="שם מבחן" {...register("TestName", { required: true })} error={!!errors.TestName} helperText={errors.TestName && "שדה חובה"} />
+          <TextField label="תאריך אחרון להגשה" type="datetime-local" InputLabelProps={{ shrink: true }} {...register("LastDate", { required: true })} error={!!errors.LastDate} helperText={errors.LastDate && "שדה חובה"} />
+          <Typography variant="h5" mt={4}>שאלות</Typography>
           {fields.map((field, index) => (
             <Card key={field.id} variant="outlined" sx={{ mt: 2 }}>
               <CardContent>
                 <Stack spacing={2}>
-                  <TextField
-                    label={`שאלה ${index + 1}`}
-                    {...register(`questions.${index}.text`, { required: true })}
-                    error={!!errors.questions?.[index]?.text}
-                    helperText={errors.questions?.[index]?.text && "שדה חובה"}
-                  />
-
-                  {Array(4)
-                    .fill(0)
-                    .map((_, ansIndex) => (
-                      <TextField
-                        key={ansIndex}
-                        label={`תשובה ${ansIndex + 1}`}
-                        {...register(`questions.${index}.answers.${ansIndex}`, { required: true })}
-                        error={!!errors.questions?.[index]?.answers?.[ansIndex]}
-                        helperText={errors.questions?.[index]?.answers?.[ansIndex] && "שדה חובה"}
-                      />
-                    ))}
-
-                  <TextField
-                    select
-                    label="בחר תשובה נכונה"
-                    defaultValue={field.correct}
-                    {...register(`questions.${index}.correct`, { required: true })}
-                  >
+                  <TextField label={`שאלה ${index + 1}`} {...register(`questions.${index}.text`, { required: true })} error={!!errors.questions?.[index]?.text} helperText={errors.questions?.[index]?.text && "שדה חובה"} />
+                  {[0, 1, 2, 3].map((ansIndex) => (
+                    <TextField key={ansIndex} label={`תשובה ${ansIndex + 1}`} {...register(`questions.${index}.answers.${ansIndex}`, { required: true })} error={!!errors.questions?.[index]?.answers?.[ansIndex]} helperText={errors.questions?.[index]?.answers?.[ansIndex] && "שדה חובה"} />
+                  ))}
+                  <TextField select label="בחר תשובה נכונה" defaultValue={field.correct} {...register(`questions.${index}.correct`, { required: true })}>
                     {[0, 1, 2, 3].map((opt) => (
-                      <MenuItem key={opt} value={opt}>
-                        תשובה {opt + 1}
-                      </MenuItem>
+                      <MenuItem key={opt} value={opt}>תשובה {opt + 1}</MenuItem>
                     ))}
                   </TextField>
-
-                  <TextField
-                    label="הגבלת זמן לשאלה (שניות)"
-                    type="number"
-                    {...register(`questions.${index}.timeLimit`, { required: true })}
-                    error={!!errors.questions?.[index]?.timeLimit}
-                    helperText={errors.questions?.[index]?.timeLimit && "שדה חובה"}
-                  />
+                  <TextField label="הגבלת זמן לשאלה (שניות)" type="number" {...register(`questions.${index}.timeLimit`, { required: true })} error={!!errors.questions?.[index]?.timeLimit} helperText={errors.questions?.[index]?.timeLimit && "שדה חובה"} />
                 </Stack>
               </CardContent>
             </Card>
           ))}
-
-          <Button variant="outlined" onClick={addQuestion}>
-            הוסף שאלה +
-          </Button>
-
-          <Button type="submit" variant="contained" color="primary">
-            שמור מבחן
-          </Button>
+          <Button variant="outlined" onClick={addQuestion}>הוסף שאלה +</Button>
+          <Button type="submit" variant="contained" color="primary">שמור מבחן</Button>
         </Stack>
       </form>
+
+      {/* 🔽 חלונית חתימה */}
+      <Dialog open={openSignatureDialog} onClose={() => setOpenSignatureDialog(false)}>
+        <DialogTitle>חתום על המבחן</DialogTitle>
+        <DialogContent>
+          <SignatureCanvas
+            ref={sigCanvasRef}
+            penColor="black"
+            canvasProps={{ width: 500, height: 200, className: "sigCanvas" }}
+          />
+          <Box mt={2}>
+            <Button variant="contained" color="primary" onClick={handleSignatureSave}>
+              שמור חתימה ושלח מבחן
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

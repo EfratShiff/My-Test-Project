@@ -6,6 +6,7 @@ import React, { Suspense }  from 'react';
 import { AppBar } from '@mui/material';
 import { Route, Routes } from 'react-router-dom';
 
+const ForgotPasswordLazy = React.lazy(() => import("./component/ForgotPassword"));
 const LoginLazy = React.lazy(() => import("./component/Login"))
 const CreateTestLazy = React.lazy(() => import("./component/CreateTest"))
 const SolveTestLazy = React.lazy(() => import("./component/SolveTest"))
@@ -18,6 +19,7 @@ const ViewTestsLazy = React.lazy(() => import("./component/ViewTests"))
 const StudentMenuLazy = React.lazy(() => import("./component/StudentMenu"))
 const TeacherMenuLazy = React.lazy(() => import("./component/TeacherMenu"))
 const ViewRezultTestLazy = React.lazy(() => import("./component/ViewRezultTest"))
+
 
 
 function App() {
@@ -39,6 +41,8 @@ function App() {
           <Route path='/TeacherMenu' element={<TeacherMenuLazy />} />
           <Route path='/StudentMenu' element={<StudentMenuLazy />} />
           <Route path='/ViewRezultTest' element={<ViewRezultTestLazy />} />
+          <Route path='/forgot-password' element={<ForgotPasswordLazy />} />
+
          </Routes>
       </Suspense>
       </div>
