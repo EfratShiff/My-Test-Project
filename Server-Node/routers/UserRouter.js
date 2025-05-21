@@ -7,7 +7,7 @@ const userController = require("../controllers/UserController");
 
 router.get('/getAllUser', getAllUser);
 router.post("/createUser", authenticateToken, checkRole(['manager']), createUser);
-router.delete('/deleteUser/:name/:email', deleteUser);
+router.delete('/deleteUser/', deleteUser);
 router.post('/getUser', getUser);
 router.post('/forgot-password', forgotPassword);
 

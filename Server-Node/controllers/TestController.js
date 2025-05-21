@@ -69,16 +69,24 @@ async function deleteTest(req, res) {
     }
 }
 function updateTest(req, res) {
-    const { title } = req.params;
+    const { id } = req.params;
+    console.log("מזהה מבחן שהתקבל:", id);
+    console.log("נתונים שהתקבלו לעדכון:", req.body);
 
-    Test.findOneAndUpdate({ title: title }, req.body, { new: true, runValidators: true })
+    Test.findByIdAndUpdate(id, req.body, { new: true, runValidators: true })
         .then(updatedTest => {
+            console.log("תוצאת החיפוש:", updatedTest);
             if (!updatedTest) {
+                console.log("לא נמצא מבחן עם המזהה:", id);
                 return res.status(404).json({ message: "מבחן לא נמצא" });
             }
+            console.log("מבחן עודכן בהצלחה:", updatedTest);
             res.status(200).json(updatedTest);
         })
-        .catch(err => res.status(500).json({ message: "שגיאה בעדכון", error: err.message }));
+        .catch(err => {
+            console.error("שגיאה בעדכון מבחן:", err);
+            res.status(500).json({ message: "שגיאה בעדכון", error: err.message });
+        });
 }
 
 module.exports={createTest,getTest,getAllTest,deleteTest,updateTest}
