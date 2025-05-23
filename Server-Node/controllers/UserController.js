@@ -4,70 +4,6 @@ const bcrypt = require("bcrypt");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-// async function createUser(req, res) { 
-//     const forgotPassword = async (req, res) => {
-//         const { email } = req.body;
-      
-//         try {
-//           const user = await User.findOne({ email });
-      
-//           if (!user) {
-//             return res.status(404).json({ error: "משתמש לא נמצא" });
-//           }
-      
-//           const tempPassword = crypto.randomBytes(4).toString("hex");
-//           const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
-      
-//           user.password = hashedTempPassword;
-//           await user.save();
-      
-//           const transporter = nodemailer.createTransport({
-//             service: "gmail",
-//             auth: {
-//               user: process.env.EMAIL_USER,
-//               pass: process.env.EMAIL_PASS,
-//             },
-//           });
-      
-//           await transporter.sendMail({
-//             from: process.env.EMAIL_USER,
-//             to: email,
-//             subject: "איפוס סיסמה",
-//             text: `הסיסמה הזמנית שלך היא: ${tempPassword}`,
-//           });
-      
-//           res.json({ message: "סיסמה זמנית נשלחה למייל" });
-//         } catch (err) {
-//           console.error("שגיאה באיפוס סיסמה:", err);
-//           res.status(500).json({ error: "שגיאה בשרת" });
-//         }
-//       }; 
-//     try {
-//         const { name, email, password, role } = req.body;
-//         const saltRounds = 10; 
-//         const hashedPassword = await bcrypt.hash(password, saltRounds);
-//         const newUser = new User({
-//             name,
-//             email,
-//             password: hashedPassword, 
-//             role
-//         });
-//         await newUser.save();
-//         const token = jwt.sign(
-//             { userId: newUser._id, role: newUser.role }, 
-//             process.env.JWT_SECRET,
-//             { expiresIn: '10h' }
-//         );
-
-//         res.status(201).json({
-//             user: newUser,
-//             token: token
-//         });
-
-//     } catch (error) {
-//         res.status(500).send('Error creating user');
-//     }
-// }
 async function createUser(req, res) {  
     try {
         const { name, email, password, role } = req.body;
@@ -124,8 +60,9 @@ try {
         from: process.env.EMAIL_USER,
         to: email,
         subject: "איפוס סיסמה",
-        text: `הסיסמה הזמנית שלך היא: ${tempPassword}`,
+        text: `הסיסמה הזמנית שלך היא: ${tempPassword}`, 
     });
+    
 
     res.json({ message: "סיסמה זמנית נשלחה למייל" });
 } catch (err) {
@@ -134,24 +71,6 @@ try {
 }
 };
 
-
-// async function deleteUser(req, res) {
-//     const { email, password } = req.body;
-//     console.log(email,password);
-//     try {
-//         const NameUser = await User.findOne({ email });
-//         console.log(NameUser);
-        
-//         if (!NameUser) {
-//             return res.status(404).json({ message: 'user not found' });
-//         }
-//         await User.deleteOne({ email });
-//         return res.status(200).json({ message: 'user deleted successfully' });
-//     } catch (err) {
-//         console.error(err);
-//         return res.status(500).json({ message: 'Server error' });
-//     }
-// }
 
 async function deleteUser(req, res) {
     const { email, password } = req.body; // משתנה מ־req.params ל־req.body
@@ -237,51 +156,50 @@ async function getUser(req, res) {
 }
 
 // ** פונקציה חדשה לאיפוס סיסמה **
-async function resetPassword(req, res) {
-    const { email } = req.body;
-    console.log('Received reset password request for:', email);
+// async function resetPassword(req, res) {
+//     const { email } = req.body;
+//     console.log('Received reset password request for:', email);
 
-    try {
-        const user = await User.findOne({ email });
-        if (!user) {
-            console.log('User not found');
-            return res.status(404).json({ message: 'User not found' });
-        }
+//     try {
+//         const user = await User.findOne({ email });
+//         if (!user) {
+//             console.log('User not found');
+//             return res.status(404).json({ message: 'User not found' });
+//         }
 
-        const tempPassword = crypto.randomBytes(6).toString('hex');
-        const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
-        user.password = hashedTempPassword;
-        await user.save();
+//         const tempPassword = crypto.randomBytes(6).toString('hex');
+//         const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
+//         user.password = hashedTempPassword;
+//         await user.save();
 
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
-        });
+//         const transporter = nodemailer.createTransport({
+//             service: 'gmail',
+//             auth: {
+//                 user: process.env.EMAIL_USER,
+//                 pass: process.env.EMAIL_PASS
+//             }
+//         });
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER, // עדיף שהמייל ישלח מהכתובת הזו
-            to: email,
-            subject: 'Your temporary password',
-            text: `Your temporary password is: ${tempPassword}`
-        };
+//         const mailOptions = {
+//             from: process.env.EMAIL_USER, // עדיף שהמייל ישלח מהכתובת הזו
+//             to: email,
+//             subject: 'Your temporary password',
+//             text: `Your temporary password is: ${tempPassword}`
+//         };
 
-        try {
-            await transporter.sendMail(mailOptions);
-            console.log('Email sent successfully');
-            res.status(200).json({ message: 'Temporary password sent to email' });
-        } catch (error) {
-            console.error('Error sending email:', error);
-            res.status(500).json({ message: 'Failed to send email' });
-        }
+//         try {
+//             await transporter.sendMail(mailOptions);
+//             console.log('Email sent successfully');
+//             res.status(200).json({ message: 'Temporary password sent to email' });
+//         } catch (error) {
+//             console.error('Error sending email:', error);
+//             res.status(500).json({ message: 'Failed to send email' });
+//         }
 
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-}
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// }
 
-
-module.exports = { createUser, deleteUser, getUser, getUserById, getAllUser, resetPassword,forgotPassword };
+module.exports = { createUser, deleteUser, getUser, getUserById, getAllUser,forgotPassword };

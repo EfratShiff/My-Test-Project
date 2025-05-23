@@ -10,12 +10,6 @@ router.post("/createUser", authenticateToken, checkRole(['manager']), createUser
 router.delete('/deleteUser/', deleteUser);
 router.post('/getUser', getUser);
 router.post('/forgot-password', forgotPassword);
-
-
-
-// הוספת ה-route ל-resetPassword
-// router.post('/resetPassword', resetPassword);
-
 router.get('/getUserById/:id', getUserById);
 
 module.exports = router;
