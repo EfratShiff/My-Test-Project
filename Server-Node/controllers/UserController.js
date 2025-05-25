@@ -237,4 +237,65 @@ async function getUser(req, res) {
     }
 }
 
-module.exports = { createUser, deleteUser, getUser, getUserById, getAllUser,forgotPassword,SendMark };
+const verifyTempPassword = async (req, res) => {
+    const { email, tempPassword } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: "משתמש לא נמצא" });
+        }
+
+        const isMatch = await bcrypt.compare(tempPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: "סיסמה זמנית שגויה" });
+        }
+
+        const token = jwt.sign(
+            { userId: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.json({ 
+            success: true, 
+            token,
+            role: user.role,
+            email: user.email
+        });
+    } catch (err) {
+        console.error("שגיאה באימות סיסמה זמנית:", err);
+        res.status(500).json({ error: "שגיאה בשרת" });
+    }
+};
+
+const changePassword = async (req, res) => {
+    const { email, newPassword } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: "משתמש לא נמצא" });
+        }
+
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ message: "הסיסמה שונתה בהצלחה" });
+    } catch (err) {
+        console.error("שגיאה בשינוי סיסמה:", err);
+        res.status(500).json({ error: "שגיאה בשרת" });
+    }
+};
+
+module.exports = { 
+    createUser, 
+    deleteUser, 
+    getUser, 
+    getUserById, 
+    getAllUser,
+    forgotPassword,
+    SendMark,
+    verifyTempPassword,
+    changePassword 
+};

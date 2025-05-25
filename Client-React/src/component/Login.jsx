@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useForm } from "react-hook-form";
@@ -46,6 +45,9 @@ const Login = () => {
     const [showTempPasswordInput, setShowTempPasswordInput] = useState(false);
     const [tempPasswordEmail, setTempPasswordEmail] = useState("");
     const [email, setEmail] = useState(""); 
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const {
         register,
         handleSubmit,
@@ -215,41 +217,70 @@ const Login = () => {
         }
     };
     const verifyTempPassword = async (data) => {
-        console.log("verifyTempPassword called with:", data);
         try {
             const requestData = { 
                 email: tempPasswordEmail,
                 tempPassword: data.tempPassword 
             };
-            console.log("Verifying temp password:", requestData);
             const res = await axios.post('http://localhost:8080/User/verify-temp-password', requestData);
-            console.log("Temp password verification response:", res.data);
+            
             if (res.data.success) {
                 const token = res.data.token;
                 const role = res.data.role;
-                const email = res.data.email; 
-                if (token) {
-                    localStorage.setItem('token', token);
-                    localStorage.setItem('role', role);
-                    localStorage.setItem('email',email)
-                    alert("אימות הסיסמה הזמנית הצליח! התחברת בהצלחה!");
-                    setShowTempPasswordInput(false);
-                    setTempPasswordEmail("");
-                    if (role === 'manager') {
-                        setIsManager(true);
-                        navigate('/ManagerMenu');
-                    } else if (role === 'student') {
-                        navigate('/StudentMenu');
-                    } else if (role === 'teacher') {
-                        navigate('/TeacherMenu');
-                    }
-                }
+                const email = res.data.email;
+                
+                localStorage.setItem('token', token);
+                localStorage.setItem('role', role);
+                localStorage.setItem('email', email);
+                
+                setShowTempPasswordInput(false);
+                setShowChangePassword(true);
             }
         } catch (err) {
-            console.error("Temp password verification error:", err);
             alert("סיסמה זמנית שגויה או פגה תוקפה. נסה שוב או בקש סיסמה חדשה.");
         }
     };
+
+    const handleChangePassword = async () => {
+        if (newPassword !== confirmNewPassword) {
+            alert("הסיסמאות החדשות אינן תואמות");
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            alert("הסיסמה החדשה חייבת להכיל לפחות 6 תווים");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('http://localhost:8080/User/change-password', {
+                email: tempPasswordEmail,
+                newPassword: newPassword
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            alert("הסיסמה שונתה בהצלחה!");
+            setShowChangePassword(false);
+            setTempPasswordEmail("");
+            setNewPassword("");
+            setConfirmNewPassword("");
+            
+            // ניתוב למסך המתאים לפי התפקיד
+            const role = localStorage.getItem('role');
+            if (role === 'manager') {
+                navigate('/ManagerMenu');
+            } else if (role === 'student') {
+                navigate('/StudentMenu');
+            } else if (role === 'teacher') {
+                navigate('/TeacherMenu');
+            }
+        } catch (err) {
+            alert("שגיאה בשינוי הסיסמה: " + (err.response?.data?.error || "שגיאה כללית"));
+        }
+    };
+
     return (
         <Container component="main" maxWidth="sm" dir="rtl">
             <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -605,7 +636,6 @@ const Login = () => {
             }}>
                 <DialogTitle>אימות סיסמה זמנית</DialogTitle>
                 <form onSubmit={handleTempPasswordSubmit((data) => {
-                    console.log("Temp password form submitted with data:", data);
                     verifyTempPassword(data);
                 })}>
                     <DialogContent>
@@ -644,6 +674,47 @@ const Login = () => {
                         </Button>
                     </DialogActions>
                 </form>
+            </Dialog>
+            <Dialog open={showChangePassword} onClose={() => setShowChangePassword(false)}>
+                <DialogTitle>שינוי סיסמה</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        אנא הזן סיסמה חדשה
+                    </DialogContentText>
+                    <TextField
+                        margin="dense"
+                        label="סיסמה חדשה"
+                        type="password"
+                        fullWidth
+                        variant="outlined"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        error={newPassword.length > 0 && newPassword.length < 6}
+                        helperText={newPassword.length > 0 && newPassword.length < 6 ? "הסיסמה חייבת להכיל לפחות 6 תווים" : ""}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="אימות סיסמה חדשה"
+                        type="password"
+                        fullWidth
+                        variant="outlined"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        error={confirmNewPassword.length > 0 && newPassword !== confirmNewPassword}
+                        helperText={confirmNewPassword.length > 0 && newPassword !== confirmNewPassword ? "הסיסמאות אינן תואמות" : ""}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowChangePassword(false)}>ביטול</Button>
+                    <Button 
+                        onClick={handleChangePassword}
+                        variant="contained" 
+                        color="primary"
+                        disabled={!newPassword || !confirmNewPassword || newPassword !== confirmNewPassword || newPassword.length < 6}
+                    >
+                        שנה סיסמה
+                    </Button>
+                </DialogActions>
             </Dialog>
         </Container>
     );

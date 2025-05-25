@@ -54,18 +54,48 @@ async function getAllTest(req, res) {
 
 
 async function deleteTest(req, res) {
-    const { title } = req.params; 
-    console.log(title);
+    const { id } = req.params;
+    console.log("מזהה מבחן למחיקה:", id);
+    console.log("headers:", req.headers);
+    console.log("משתמש מבקש:", req.user);
+    
+    if (!id) {
+        console.log("לא התקבל מזהה מבחן");
+        return res.status(400).json({ message: 'לא התקבל מזהה מבחן' });
+    }
+
     try {
-        const NameTest = await Test.findOne({ title });
-        if (!NameTest) {
-            return res.status(404).json({ message: 'Test not found' });
+        console.log("מחפש מבחן במסד הנתונים...");
+        const test = await Test.findById(id);
+        console.log("תוצאת חיפוש:", test);
+
+        if (!test) {
+            console.log("לא נמצא מבחן עם המזהה:", id);
+            return res.status(404).json({ message: 'מבחן לא נמצא' });
         }
-        await Test.deleteOne({ title });
-        return res.status(200).json({ message: 'Test deleted successfully' });
+
+        // בדיקה שהמורה המחובר הוא זה שיצר את המבחן
+        const teacherId = req.user?.userId;
+        console.log("מזהה מורה מהטוקן:", teacherId);
+        console.log("מזהה מורה של המבחן:", test.teacherId?.toString());
+        
+        if (!teacherId) {
+            console.log("לא נמצא מזהה מורה בטוקן");
+            return res.status(401).json({ message: 'לא אותרת כמורה מחובר' });
+        }
+
+        if (test.teacherId.toString() !== teacherId) {
+            console.log("ניסיון למחוק מבחן של מורה אחר");
+            return res.status(403).json({ message: 'אין לך הרשאה למחוק מבחן זה' });
+        }
+
+        console.log("מתחיל למחוק את המבחן...");
+        await Test.findByIdAndDelete(id);
+        console.log("מבחן נמחק בהצלחה:", id);
+        return res.status(200).json({ message: 'המבחן נמחק בהצלחה' });
     } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Server error' });
+        console.error("שגיאה במחיקת מבחן:", err);
+        return res.status(500).json({ message: 'שגיאה במחיקת המבחן', error: err.message });
     }
 }
 function updateTest(req, res) {
@@ -73,11 +103,33 @@ function updateTest(req, res) {
     console.log("מזהה מבחן שהתקבל:", id);
     console.log("נתונים שהתקבלו לעדכון:", req.body);
 
-    Test.findByIdAndUpdate(id, req.body, { new: true, runValidators: true })
-        .then(updatedTest => {
-            console.log("תוצאת החיפוש:", updatedTest);
-            if (!updatedTest) {
+    // מוצא את המבחן הקיים
+    Test.findById(id)
+        .then(existingTest => {
+            if (!existingTest) {
                 console.log("לא נמצא מבחן עם המזהה:", id);
+                return res.status(404).json({ message: "מבחן לא נמצא" });
+            }
+
+            // מעדכן את כל השדות שנשלחו
+            if (req.body.title) existingTest.title = req.body.title;
+            if (req.body.lastDate) existingTest.lastDate = req.body.lastDate;
+            if (req.body.questions) {
+                // וידוא שכל השאלות החדשות מכילות את כל השדות הנדרשים
+                const validQuestions = req.body.questions.map(q => ({
+                    questionText: q.questionText,
+                    options: q.options,
+                    correctAnswer: q.correctAnswer,
+                    timeLimit: q.timeLimit || 0
+                }));
+                existingTest.questions = validQuestions;
+            }
+
+            // שומר את המבחן המעודכן
+            return existingTest.save();
+        })
+        .then(updatedTest => {
+            if (!updatedTest) {
                 return res.status(404).json({ message: "מבחן לא נמצא" });
             }
             console.log("מבחן עודכן בהצלחה:", updatedTest);

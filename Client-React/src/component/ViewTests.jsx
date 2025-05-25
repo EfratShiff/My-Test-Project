@@ -18,7 +18,8 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
+  MenuItem
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PersonIcon from "@mui/icons-material/Person";
@@ -29,6 +30,8 @@ import DoneIcon from "@mui/icons-material/Done";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 
 const ViewTests = () => {
   const navigate = useNavigate();
@@ -37,6 +40,16 @@ const ViewTests = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editedTest, setEditedTest] = useState(null);
+  const [newQuestion, setNewQuestion] = useState({
+    questionText: '',
+    options: ['', '', '', ''],
+    correctAnswer: '',
+    timeLimit: 0
+  });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [testToDelete, setTestToDelete] = useState(null);
 
   useEffect(() => {
     const fetchTests = async () => {
@@ -77,12 +90,13 @@ const ViewTests = () => {
     };
     fetchTeachers();
   }, [tests]);
+
   const handleClick = (testId) => {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("לא נמצא טוקן, התחבר שוב");
       return; 
-      }
+    }
 
     const decoded = jwtDecode(token);
     const role = decoded.role;
@@ -95,12 +109,15 @@ const ViewTests = () => {
     const lastDate = new Date(test.lastDate);
     if (role === "teacher") {
       navigate(`/SolveTest/${testId}`);
-      return;     }
+      return;
+    }
     if (lastDate < currentDate) {
       alert("המבחן עבר את תאריך ההגשה. תלמיד לא יכול לגשת למבחן.");
-      return;    }
+      return;
+    }
     navigate(`/SolveTest/${testId}`);
   };
+
   const getRemainingTime = (lastDate) => {
     const now = new Date();
     const deadline = new Date(lastDate);
@@ -115,6 +132,7 @@ const ViewTests = () => {
       return `${hours} שעות ו-${minutes} דקות`;
     }
   };
+
   const getCardStyle = (isExpired) => {
     return {
       height: '100%',
@@ -129,8 +147,7 @@ const ViewTests = () => {
       backgroundColor: isExpired ? '#fff8f8' : '#ffffff'
     };
   };
-  const [isEditingTest, setIsEditingTest] = useState(null);
-  const [newTestTitle, setNewTestTitle] = useState("");
+
   const isTeacher = () => {
     const token = localStorage.getItem("token");
     if (!token) return false;
@@ -142,55 +159,92 @@ const ViewTests = () => {
       return false;
     }
   };
-  const updateTestTitle = async (testId) => {
-    if (!newTestTitle.trim()) {
-      alert("שם המבחן לא יכול להיות ריק");
+
+  const getCurrentTeacherId = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.userId;
+    } catch (error) {
+      console.error("שגיאה בפענוח הטוקן:", error);
+      return null;
+    }
+  };
+
+  const canEditTest = (test) => {
+    const currentTeacherId = getCurrentTeacherId();
+    return isTeacher() && currentTeacherId === test.teacherId;
+  };
+
+  const handleEditTest = (test) => {
+    if (!canEditTest(test)) {
+      alert("אין לך הרשאה לערוך מבחן זה");
       return;
     }
+    setEditedTest({...test});
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveTest = async () => {
     try {
-      const currentTest = tests.find(test => test._id === testId);
-      alert(currentTest)
-      if (!currentTest) {
-        throw new Error("לא נמצא מבחן לעדכון");
-      }
-      console.log("מבחן נוכחי שנמצא:", currentTest);
-      console.log("ID של המבחן:", currentTest._id);
-      const response = await axios.put(`http://localhost:8080/Test/updateTest/${currentTest._id}`, {
-        title: newTestTitle,
-        _id: currentTest._id 
-         });
-      console.log("תגובה מהשרת:", response.data);
+      const response = await axios.put(`http://localhost:8080/Test/updateTest/${editedTest._id}`, editedTest);
+      
       if (response.data) {
         setTests(prevTests => prevTests.map(test => 
-          test._id === testId ? { ...test, title: newTestTitle } : test
+          test._id === editedTest._id ? response.data : test
         ));
-        setIsEditingTest(null);
-        setNewTestTitle("");
-      } else {
-        throw new Error("לא התקבלה תשובה מהשרת");
+        setEditDialogOpen(false);
+        setEditedTest(null);
+        alert("המבחן עודכן בהצלחה!");
       }
     } catch (error) {
-      console.error("פרטי השגיאה:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        url: error.config?.url,
-        data: error.config?.data
-      });
-      
-      if (error.response) {
-        alert(`שגיאה בעדכון שם המבחן: ${error.response.data.message || error.response.data}`);
-      } else if (error.request) {
-        alert("לא התקבלה תשובה מהשרת. אנא נסה שוב מאוחר יותר.");
-      } else {
-        alert(`שגיאה בעדכון שם המבחן: ${error.message}`);
-      }
+      console.error("שגיאה בעדכון מבחן:", error);
+      alert(`שגיאה בעדכון המבחן: ${error.response?.data?.message || error.message}`);
     }
   };
-  const startEditingTest = (test) => {
-    setIsEditingTest(test._id);
-    setNewTestTitle(test.title);
+
+  const handleAddQuestion = () => {
+    setEditedTest(prev => ({
+      ...prev,
+      questions: [...prev.questions, {...newQuestion}]
+    }));
+    setNewQuestion({
+      questionText: '',
+      options: ['', '', '', ''],
+      correctAnswer: '',
+      timeLimit: 0
+    });
   };
+
+  const handleRemoveQuestion = (index) => {
+    setEditedTest(prev => ({
+      ...prev,
+      questions: prev.questions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleQuestionChange = (index, field, value) => {
+    setEditedTest(prev => ({
+      ...prev,
+      questions: prev.questions.map((q, i) => 
+        i === index ? {...q, [field]: value} : q
+      )
+    }));
+  };
+
+  const handleOptionChange = (questionIndex, optionIndex, value) => {
+    setEditedTest(prev => ({
+      ...prev,
+      questions: prev.questions.map((q, i) => 
+        i === questionIndex ? {
+          ...q,
+          options: q.options.map((opt, j) => j === optionIndex ? value : opt)
+        } : q
+      )
+    }));
+  };
+
   const getUniqueTeachers = () => {
     const uniqueTeacherIds = [...new Set(tests.map(test => test.teacherId))];
     return uniqueTeacherIds.map(id => ({
@@ -198,10 +252,58 @@ const ViewTests = () => {
       name: teachersNames[id] || "טעינה..."
     })).filter(teacher => teacher.id);
   };
+
   const getFilteredTests = () => {
     if (!selectedTeacher) return tests;
     return tests.filter(test => test.teacherId === selectedTeacher);
   };
+
+  const handleDeleteClick = (test, e) => {
+    e.stopPropagation();
+    if (!canEditTest(test)) {
+      alert("אין לך הרשאה למחוק מבחן זה");
+      return;
+    }
+    setTestToDelete(test);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("לא נמצא טוקן, התחבר שוב");
+        return;
+      }
+
+      console.log("מנסה למחוק מבחן עם מזהה:", testToDelete._id);
+      console.log("טוקן:", token);
+
+      const response = await axios.delete(`http://localhost:8080/Test/deleteTest/${testToDelete._id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      console.log("תגובה מהשרת:", response.data);
+      
+      if (response.data) {
+        setTests(prevTests => prevTests.filter(test => test._id !== testToDelete._id));
+        setDeleteDialogOpen(false);
+        setTestToDelete(null);
+        alert("המבחן נמחק בהצלחה!");
+      }
+    } catch (error) {
+      console.error("שגיאה במחיקת מבחן:", error);
+      console.error("פרטי השגיאה:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
+      alert(`שגיאה במחיקת המבחן: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh" flexDirection="column">
@@ -210,6 +312,7 @@ const ViewTests = () => {
       </Box>
     );
   }
+
   if (error) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
@@ -219,8 +322,10 @@ const ViewTests = () => {
       </Container>
     );
   }
+
   const uniqueTeachers = getUniqueTeachers();
   const filteredTests = getFilteredTests();
+
   return (
     <Container maxWidth="lg" dir="rtl" sx={{ mt: 4, mb: 8 }}>
       <Box textAlign="center" mb={6}>
@@ -302,40 +407,37 @@ const ViewTests = () => {
                     transform: isMiddleCard ? 'scale(1.05)' : 'none',
                     zIndex: isMiddleCard ? 1 : 0
                   }} 
-                  onClick={isEditingTest === test._id ? undefined : () => handleClick(test._id)}
+                  onClick={() => handleClick(test._id)}
                 >
                   <CardHeader
                     title={
-                      isEditingTest === test._id ? (
-                        <TextField
-                          fullWidth
-                          variant="outlined"
-                          size="small"
-                          value={newTestTitle}
-                          onChange={(e) => setNewTestTitle(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                          autoFocus
-                          sx={{ mb: 1 }}
-                        />
-                      ) : (
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Typography variant="h6" fontWeight="bold" noWrap>
-                            {test.title}
-                          </Typography>
-                          {userIsTeacher && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="h6" fontWeight="bold" noWrap>
+                          {test.title}
+                        </Typography>
+                        {canEditTest(test) && (
+                          <Box>
                             <IconButton 
                               size="small" 
                               color="primary" 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                startEditingTest(test);
+                                handleEditTest(test);
                               }}
+                              sx={{ mr: 1 }}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                          )}
-                        </Box>
-                      )
+                            <IconButton 
+                              size="small" 
+                              color="error" 
+                              onClick={(e) => handleDeleteClick(test, e)}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        )}
+                      </Box>
                     }
                     action={
                       <Chip 
@@ -363,50 +465,21 @@ const ViewTests = () => {
                     </Box>
                   </CardContent>
                   <Divider />
-                  <CardActions sx={{ p: 2, justifyContent: isEditingTest === test._id ? 'space-between' : 'center' }}>
-                    {isEditingTest === test._id ? (
-                      <>
-                        <Button 
-                          variant="outlined" 
-                          color="error" 
-                          startIcon={<CancelIcon />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsEditingTest(null);
-                          }}
-                          sx={{ flex: 1, mr: 1 }}
-                        >
-                          ביטול
-                        </Button>
-                        <Button 
-                          variant="contained" 
-                          color="success" 
-                          startIcon={<SaveIcon />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateTestTitle(test._id);
-                          }}
-                          sx={{ flex: 1 }}
-                        >
-                          שמור
-                        </Button>
-                      </>
-                    ) : (
-                      <Button 
-                        variant="contained" 
-                        fullWidth
-                        color={isExpired ? "inherit" : "primary"}
-                        disabled={isExpired && !userIsTeacher}
-                        startIcon={isExpired ? <WarningIcon /> : <DoneIcon />}
-                        sx={{ 
-                          fontWeight: 'bold',
-                          py: 1,
-                          height: '42px' 
-                        }}
-                      >
-                        {isExpired ? (userIsTeacher ? 'צפה במבחן' : 'המבחן סגור') : 'פתח מבחן'}
-                      </Button>
-                    )}
+                  <CardActions sx={{ p: 2, justifyContent: 'center' }}>
+                    <Button 
+                      variant="contained" 
+                      fullWidth
+                      color={isExpired ? "inherit" : "primary"}
+                      disabled={isExpired && !userIsTeacher}
+                      startIcon={isExpired ? <WarningIcon /> : <DoneIcon />}
+                      sx={{ 
+                        fontWeight: 'bold',
+                        py: 1,
+                        height: '42px' 
+                      }}
+                    >
+                      {isExpired ? (userIsTeacher ? 'צפה במבחן' : 'המבחן סגור') : 'פתח מבחן'}
+                    </Button>
                   </CardActions>
                 </Card>
               </Grid>
@@ -414,7 +487,129 @@ const ViewTests = () => {
           })}
         </Grid>
       )}
+
+      <Dialog 
+        open={editDialogOpen} 
+        onClose={() => setEditDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>עריכת מבחן</DialogTitle>
+        <DialogContent>
+          {editedTest && (
+            <Box sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                label="כותרת המבחן"
+                value={editedTest.title}
+                onChange={(e) => setEditedTest(prev => ({...prev, title: e.target.value}))}
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="תאריך אחרון להגשה"
+                type="datetime-local"
+                value={new Date(editedTest.lastDate).toISOString().slice(0, 16)}
+                onChange={(e) => setEditedTest(prev => ({...prev, lastDate: new Date(e.target.value)}))}
+                sx={{ mb: 2 }}
+                InputLabelProps={{ shrink: true }}
+              />
+
+              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>שאלות</Typography>
+              
+              {editedTest.questions.map((question, index) => (
+                <Paper key={index} sx={{ p: 2, mb: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="subtitle1">שאלה {index + 1}</Typography>
+                    <IconButton onClick={() => handleRemoveQuestion(index)} color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                  
+                  <TextField
+                    fullWidth
+                    label="טקסט השאלה"
+                    value={question.questionText}
+                    onChange={(e) => handleQuestionChange(index, 'questionText', e.target.value)}
+                    sx={{ mb: 2 }}
+                  />
+
+                  {question.options.map((option, optionIndex) => (
+                    <TextField
+                      key={optionIndex}
+                      fullWidth
+                      label={`תשובה ${optionIndex + 1}`}
+                      value={option}
+                      onChange={(e) => handleOptionChange(index, optionIndex, e.target.value)}
+                      sx={{ mb: 1 }}
+                    />
+                  ))}
+
+                  <TextField
+                    select
+                    fullWidth
+                    label="תשובה נכונה"
+                    value={question.correctAnswer}
+                    onChange={(e) => handleQuestionChange(index, 'correctAnswer', e.target.value)}
+                    sx={{ mb: 1 }}
+                  >
+                    {question.options.map((option, i) => (
+                      <MenuItem key={i} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="זמן לשאלה (בדקות)"
+                    value={question.timeLimit}
+                    onChange={(e) => handleQuestionChange(index, 'timeLimit', parseInt(e.target.value))}
+                  />
+                </Paper>
+              ))}
+
+              <Button
+                variant="outlined"
+                onClick={handleAddQuestion}
+                startIcon={<AddIcon />}
+                sx={{ mt: 2 }}
+              >
+                הוסף שאלה
+              </Button>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>ביטול</Button>
+          <Button onClick={handleSaveTest} variant="contained" color="primary">
+            שמור שינויים
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>אישור מחיקת מבחן</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            האם אתה בטוח שברצונך למחוק את המבחן "{testToDelete?.title}"?
+            פעולה זו אינה ניתנת לביטול.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>ביטול</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            מחק
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
+
 export default ViewTests;

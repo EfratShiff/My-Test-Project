@@ -9,8 +9,8 @@ console.log("router");
 router.post("/createTest",createTest);
 router.get("/getTest/:id", getTest); 
 router.get("/getAllTest/", getAllTest);  
-router.delete("/deleteTest/:title", authenticateToken, checkRole(['teacher']),deleteTest);
-router.put("/updateTest/:title",updateTest);
+router.delete("/deleteTest/:id", authenticateToken, checkRole(['teacher']),deleteTest);
+router.put("/updateTest/:id", updateTest);
 
 
 module.exports= router
