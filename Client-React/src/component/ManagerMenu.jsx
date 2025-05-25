@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState } from "react";
 import {
   Button,
@@ -52,10 +49,10 @@ const ManagerMenu = () => {
   } = useForm();
 
   const fetchAllUsers = async () => {
-    try {
+    try {debugger
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get('http://localhost:8080/User/getAllUsers', {
+      const response = await axios.get('http://localhost:8080/User/getAllUser', {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -78,7 +75,6 @@ const ManagerMenu = () => {
         const role = actionType === "add-teacher" ? "teacher" : "student";
         data.role = role;
         
-        // וידוא תקינות הנתונים רק בעת הוספת משתמש
         if (!data.name || !data.email || !data.password) {
           throw new Error("כל השדות הם שדות חובה");
         }
@@ -99,15 +95,13 @@ const ManagerMenu = () => {
         });
         
         alert(`המשתמש בתפקיד ${role} נוסף בהצלחה`);
-        fetchAllUsers(); // רענון רשימת המשתמשים לאחר הוספה
+        fetchAllUsers(); 
       }
       else if (actionType === "delete-user") {
-        // בעת מחיקה אין צורך בולידציה מעבר לכך שהשדות הוזנו
         if (!data.email || !data.password) {
           throw new Error("יש להזין אימייל וסיסמה כדי למחוק משתמש");
         }
         
-        // מחיקה לפי אימייל וסיסמה
         await axios.delete("http://localhost:8080/User/deleteUser", {
   data: {
     email: data.email,
@@ -116,7 +110,7 @@ const ManagerMenu = () => {
 });
 
         alert(`המשתמש נמחק בהצלחה`);
-        fetchAllUsers(); // רענון רשימת המשתמשים לאחר מחיקה
+        fetchAllUsers(); 
       }
       reset();
       setActionType("");
@@ -133,9 +127,7 @@ const ManagerMenu = () => {
     }
   };
 
-  // הגדר אפשרויות ולידציה שונות בהתאם לסוג הפעולה
   const getValidationOptions = (field) => {
-    // אם זו הוספת משתמש - נפעיל את כל הולידציות
     if (actionType.startsWith("add")) {
       switch (field) {
         case "name":
@@ -162,14 +154,12 @@ const ManagerMenu = () => {
           return {};
       }
     } 
-    // אם זו מחיקת משתמש - רק נוודא שהשדות הוזנו, ללא ולידציה נוספת
     else {
       return {
         required: "שדה חובה"
       };
     }
   };
-
   const showForm = !!actionType;
 
   return (
@@ -299,8 +289,8 @@ const ManagerMenu = () => {
                           fullWidth
                           label="אימייל"
                           variant="outlined"
-                          type="text" // שינוי מ-email ל-text כדי למנוע ולידציה מובנית של הדפדפן
-                          {...register("email", getValidationOptions("email"))}
+                          type="text" 
+                              {...register("email", getValidationOptions("email"))}
                           error={!!errors.email}
                           helperText={errors.email?.message}
                         />
@@ -386,5 +376,4 @@ const ManagerMenu = () => {
     </Box>
   );
 };
-
 export default ManagerMenu;

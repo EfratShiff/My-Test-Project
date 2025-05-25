@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
-// MUI imports
 import { 
   Container, 
   Typography, 
@@ -62,16 +61,14 @@ const ViewRezultTest = () => {
         );
         const rawResults = response.data.results || response.data;
 
-        // 💡 כאן נביא לכל מבחן גם את השם שלו ואת פרטי המורה
         const enrichedResults = await Promise.all(
           rawResults.map(async (result) => {
             try {
               const testRes = await axios.get(
                 `http://localhost:8080/Test/getTest/${result.TestId}`
               );
-              console.log("📤 נשלח לשרת:", testRes.data);
+              console.log(" נשלח לשרת:", testRes.data);
               
-              // שליפת פרטי המורה
               let teacherDetails = null;
               if (testRes.data.teacherId) {
                 try {
@@ -80,7 +77,7 @@ const ViewRezultTest = () => {
                   );
                   teacherDetails = teacherRes.data;
                 } catch (teacherErr) {
-                  console.warn("⚠️ שגיאה בשליפת מורה:", testRes.data.teacherId, teacherErr);
+                  console.warn(" שגיאה בשליפת מורה:", testRes.data.teacherId, teacherErr);
                   teacherDetails = { firstName: "לא זמין", lastName: "" };
                 }
               }
@@ -91,7 +88,7 @@ const ViewRezultTest = () => {
                 teacherDetails: teacherDetails,
               };
             } catch (err) {
-              console.warn("⚠️ שגיאה בשליפת מבחן:", result.TestId, err);
+              console.warn(" שגיאה בשליפת מבחן:", result.TestId, err);
               return {
                 ...result,
                 testDetails: { name: "שגיאה בשליפה" },
@@ -100,32 +97,24 @@ const ViewRezultTest = () => {
             }
           })
         );
-
         setResults(enrichedResults);
       } catch (error) {
-        console.error("❌ שגיאה בשליפת תוצאות:", error);
+        console.error(" שגיאה בשליפת תוצאות:", error);
         setError("שגיאה בטעינת תוצאות המבחנים");
       } finally {
         setLoading(false);
       }
     };
-
     fetchResults();
   }, []);
-
-  // Function to handle opening the dialog
   const handleOpenDialog = (result) => {
     setSelectedResult(result);
     setDialogOpen(true);
   };
-
-  // Function to handle closing the dialog
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setSelectedResult(null);
   };
-
-  // Function to render the score with appropriate color
   const renderScore = (score) => {
     const scoreValue = Math.round(score ?? 0);
     let color = "primary";
@@ -145,7 +134,6 @@ const ViewRezultTest = () => {
     );
   };
 
-  // Function to render a circular score badge
   const renderScoreBadge = (score) => {
     const scoreValue = Math.round(score ?? 0);
     let color = "primary";
@@ -190,7 +178,6 @@ const ViewRezultTest = () => {
     );
   };
 
-  // Function to get achievement icon based on score
   const getAchievementIcon = (score) => {
     const scoreValue = Math.round(score ?? 0);
     
@@ -205,7 +192,6 @@ const ViewRezultTest = () => {
     }
   };
 
-  // Function to render the test header avatar with question count
   const renderTestAvatar = (questions) => {
     const count = questions?.length || 0;
     return (
@@ -310,8 +296,6 @@ const ViewRezultTest = () => {
           ))}
         </Grid>
       )}
-
-      {/* Dialog for showing test details */}
       <Dialog 
         open={dialogOpen} 
         onClose={handleCloseDialog}
@@ -334,7 +318,6 @@ const ViewRezultTest = () => {
         <DialogContent>
           {selectedResult && (
             <>
-              {/* Test summary */}
               <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
                 <Grid container spacing={2} alignItems="center">
                   <Grid item xs={12} md={6}>
@@ -359,27 +342,20 @@ const ViewRezultTest = () => {
                   </Grid>
                 </Grid>
               </Paper>
-
               <Divider sx={{ my: 2 }} />
-              
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                 <QuizIcon sx={{ mr: 1 }} />
                 שאלות ותשובות
               </Typography>
-
               <Stack spacing={2}>
                 {selectedResult.testDetails.questions?.map((q, qIndex) => {
-                  // למצוא את תשובת התלמיד לשאלה זו
                   const studentAnswer = selectedResult.answers?.find(
                     (a) => a.questionId === q._id
                   );
-                  
                   const isCorrect = studentAnswer && 
                     q.options[studentAnswer.selectedOptionIndex] === q.correctAnswer;
-
                   const borderColor = isCorrect ? 'success.main' : 'error.main';
                   const bgColor = isCorrect ? 'rgba(76, 175, 80, 0.04)' : 'rgba(244, 67, 54, 0.04)';
-
                   return (
                     <Fade in={true} key={q._id || qIndex} timeout={500} style={{ transitionDelay: `${qIndex * 100}ms` }}>
                       <Paper 
@@ -395,16 +371,13 @@ const ViewRezultTest = () => {
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
                           שאלה {qIndex + 1}: {q.questionText}
                         </Typography>
-
                         <Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5 }}>
                           אפשרויות:
                         </Typography>
-                        
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
                           {q.options?.map((opt, i) => {
                             const isCorrectAnswer = opt === q.correctAnswer;
                             const isSelected = studentAnswer?.selectedOptionIndex === i;
-                            
                             return (
                               <Chip
                                 key={i}
@@ -425,7 +398,6 @@ const ViewRezultTest = () => {
                             );
                           })}
                         </Box>
-
                         <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
                             תשובת סטודנט:
@@ -449,7 +421,6 @@ const ViewRezultTest = () => {
             </>
           )}
         </DialogContent>
-        
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary" variant="contained">
             סגור
@@ -459,7 +430,4 @@ const ViewRezultTest = () => {
     </Container>
   );
 };
-
 export default ViewRezultTest;
-
-

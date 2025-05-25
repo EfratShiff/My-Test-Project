@@ -46,7 +46,6 @@ async function TestCheck(req, res) {
             console.log(` תשובה נכונה: ${question.correctAnswer}`);
             console.log(` תשובה שנבחרה: ${answer.selectedOptionIndex}`);
 
-            // בדיקה האם התשובה היא מספר (אינדקס) או טקסט
             if (typeof question.correctAnswer === "number") {
                 if (question.correctAnswer === answer.selectedOptionIndex) {
                     console.log(" תשובה נכונה! מוסיף נקודות");
@@ -157,7 +156,6 @@ async function getStudentTestResultByStudentID(req, res) {
         return res.status(400).json({ message: "יש לספק מזהה תלמיד" });
       }
   
-      // שליפת כל התוצאות של תלמיד זה
       const results = await Result.find({ studentId });
   
       if (!results || results.length === 0) {
@@ -171,6 +169,5 @@ async function getStudentTestResultByStudentID(req, res) {
     }
   }
   
-
 module.exports = { TestCheck, getStudentTestResult, createResultTest,getStudentTestResultByStudentID };
 
