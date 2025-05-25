@@ -1,44 +1,18 @@
-// import { Button } from "@mui/material";
-// import { Link } from "react-router-dom";
-
-// const Home = () => {
-//   return (
-//     <>
-//   <Button color="inherit" component={Link} to="/Login" sx={{ fontSize: 18 }}>
-//             להרשמה/התחברות
-//           </Button>
-//   </>
-//   );
-// }
-// export default Home;
-
-
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const Home = () => {
   const [symbols, setSymbols] = useState([]);
-  
-  // יוצר סמל מתמטי אקראי
   const createSymbol = () => {
-    // רשימת סמלים, מספרים ואותיות
     const mathItems = [
-      // מספרים
       "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-      // סמלים מתמטיים
       "π", "∑", "∫", "√", "∞", "+", "-", "×", "÷", "=", "<", ">",
-      // אותיות יווניות
       "α", "β", "Δ", "λ", "μ", "φ", "Ω", "γ", "θ", "σ",
-      // אותיות באנגלית
       "A", "B", "C", "x", "y", "z", "f", "n", "i", "j",
-      // סמלים נוספים
       "∂", "∇", "∀", "∃", "∈", "∉", "⊂", "⊃", "∪", "∩", "≠", "≈"
     ];
-    
-    // מסלול תנועה
-    const pattern = Math.floor(Math.random() * 3); // 0: אנכי, 1: אופקי, 2: אלכסוני
-    
+    const pattern = Math.floor(Math.random() * 3); 
     return {
       id: Math.random().toString(36),
       value: mathItems[Math.floor(Math.random() * mathItems.length)],
@@ -46,51 +20,46 @@ const Home = () => {
       y: Math.random() * 100,
       size: Math.random() * 24 + 12,
       opacity: Math.random() * 0.7 + 0.3,
-      speed: Math.random() * 1.5 + 0.5, // מהירות מתונה יותר
+      speed: Math.random() * 1.5 + 0.5, 
       direction: Math.random() > 0.5 ? 1 : -1,
-      color: Math.random() > 0.5 ? '#ffffff' : '#3b82f6', // לבן או כחול באופן אקראי
-      pattern: pattern, // מסלול התנועה
+      color: Math.random() > 0.5 ? '#ffffff' : '#3b82f6',
+      pattern: pattern, 
       angle: pattern === 2 ? (Math.random() * 60 + 15) * (Math.random() > 0.5 ? 1 : -1) : 0 // זווית לתנועה אלכסונית
     };
   };
   
-  // אתחול הסמלים בטעינה
   useEffect(() => {
     const initialSymbols = Array(50).fill().map(() => createSymbol());
     setSymbols(initialSymbols);
     
-    // אנימציה ועדכון מיקום הסמלים
     const interval = setInterval(() => {
       setSymbols(prevSymbols => 
         prevSymbols.map(symbol => {
           let newX = symbol.x;
           let newY = symbol.y;
           
-          // עדכון מיקום בהתאם לדפוס התנועה
           switch(symbol.pattern) {
-            case 0: // תנועה אנכית
+            case 0: 
               newY += symbol.speed * symbol.direction * 0.1;
               if (newY > 100) newY = 0;
               if (newY < 0) newY = 100;
               break;
-            case 1: // תנועה אופקית
+            case 1: 
               newX += symbol.speed * symbol.direction * 0.1;
               if (newX > 100) newX = 0;
               if (newX < 0) newX = 100;
               break;
-            case 2: // תנועה אלכסונית
+            case 2: 
               const radian = symbol.angle * (Math.PI / 180);
               newX += Math.cos(radian) * symbol.speed * 0.1;
               newY += Math.sin(radian) * symbol.speed * 0.1;
               
-              // טיפול בגבולות המסך
               if (newX > 100) newX = 0;
               if (newX < 0) newX = 100;
               if (newY > 100) newY = 0;
               if (newY < 0) newY = 100;
               break;
           }
-          
           return {
             ...symbol,
             x: newX,
@@ -100,13 +69,10 @@ const Home = () => {
       );
     }, 50);
     
-    // ניקוי
     return () => clearInterval(interval);
   }, []);
-
   return (
     <div style={styles.container}>
-      {/* שכבת הרקע עם האנימציה */}
       <div style={styles.backgroundLayer}>
         {symbols.map(symbol => (
           <div
@@ -117,7 +83,7 @@ const Home = () => {
               top: `${symbol.y}%`,
               fontSize: `${symbol.size}px`,
               opacity: symbol.opacity,
-              color: symbol.color, // שימוש בצבע האקראי (לבן או כחול)
+              color: symbol.color, 
             }}
           >
             {symbol.value}
@@ -125,7 +91,6 @@ const Home = () => {
         ))}
       </div>
       
-      {/* תוכן מרכזי */}
       <div style={styles.contentBox}>
         <h1 style={styles.heading}>ברוכים הבאים</h1>
         <p style={styles.paragraph}>הכלי החכם למבחן המושלם</p>
@@ -138,7 +103,6 @@ const Home = () => {
   );
 };
 
-// סגנונות מוגדרים באופן ישיר בקובץ (ללא תלות ב-Tailwind)
 const styles = {
   container: {
     position: 'relative',
@@ -197,5 +161,4 @@ const styles = {
     display: 'inline-block'
   }
 };
-
 export default Home;

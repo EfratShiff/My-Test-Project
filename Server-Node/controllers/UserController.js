@@ -1,8 +1,12 @@
 const jwt = require('jsonwebtoken');
-const User = require("../models/UsersModels");
+
 const bcrypt = require("bcrypt");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { send } = require('process');
+const Result = require("../models/ResultTestsModels");
+const Test = require("../models/TestModels");
+const User = require("../models/UsersModels");
 
 async function createUser(req, res) {  
     try {
@@ -32,7 +36,87 @@ async function createUser(req, res) {
     }
 }
 
-// פונקציה עצמאית
+const SendMark = async (req, res) => {
+    const { email, testId } = req.body;
+  
+    try {
+      console.log(" התחלת שליחת ציון למייל...");
+      console.log(" אימייל שהתקבל:", email);
+      console.log(" מזהה מבחן שהתקבל:", testId);
+  
+      const student = await User.findOne({ email });
+      if (!student) {
+        console.log(" משתמש לא נמצא");
+        return res.status(404).json({ error: "משתמש לא נמצא" });
+      }
+  
+      console.log(" נמצא משתמש:", student);
+  
+      const result = await Result.findOne({
+        TestId: testId,
+        studentId: student._id
+      });
+  
+      if (!result) {
+        console.log(" לא נמצאה תוצאה במאגר עבור מבחן זה וסטודנט זה");
+        return res.status(404).json({ error: "לא נמצאה תוצאה עבור המבחן" });
+      }
+  
+      console.log(" נמצא תוצאה:", result);
+  
+      const test = await Test.findById(testId).populate("teacherId");
+      if (!test) {
+        console.log(" מבחן לא נמצא");
+        return res.status(404).json({ error: "מבחן לא נמצא" });
+      }
+  
+      console.log(" מבחן נמצא:", test);
+  
+      const teacher = test.teacherId;
+      if (!teacher) {
+        console.log(" מורה לא נמצא");
+        return res.status(404).json({ error: "מורה לא נמצא" });
+      }
+  
+      console.log(" מורה שמצורף למבחן:", teacher);
+  
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        }
+      });
+  
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: student.email,
+        subject: `הציון שלך במבחן "${test.title}"`,
+        text: `
+  שלום ${student.name},
+  
+  המבחן "${test.title}" נבדק.
+  
+  שם המורה: ${teacher.name}
+  הציון שלך: ${result.Mark}/100
+  
+  בהצלחה! 
+        `
+      };
+  
+      console.log(" שליחת המייל מתבצעת כעת...");
+      await transporter.sendMail(mailOptions);
+      console.log(" מייל נשלח בהצלחה");
+  
+      res.status(200).json({ message: "המייל נשלח בהצלחה " });
+  
+    } catch (error) {
+      console.error(" שגיאה בשליחת מייל:", error);
+      res.status(500).json({ error: "שגיאת שרת בעת שליחת המייל: " + error.message });
+    }
+  };
+  
+
 const forgotPassword = async (req, res) => {
 const { email } = req.body;
 try {
@@ -71,9 +155,8 @@ try {
 }
 };
 
-
 async function deleteUser(req, res) {
-    const { email, password } = req.body; // משתנה מ־req.params ל־req.body
+    const { email, password } = req.body; 
 
     try {
         const user = await User.findOne({ email });
@@ -97,7 +180,6 @@ async function deleteUser(req, res) {
         return res.status(500).json({ message: 'Server error' });
     }
 }
-
 
 async function getUserById(req, res) {
     const userId = req.params.id; 
@@ -155,51 +237,4 @@ async function getUser(req, res) {
     }
 }
 
-// ** פונקציה חדשה לאיפוס סיסמה **
-// async function resetPassword(req, res) {
-//     const { email } = req.body;
-//     console.log('Received reset password request for:', email);
-
-//     try {
-//         const user = await User.findOne({ email });
-//         if (!user) {
-//             console.log('User not found');
-//             return res.status(404).json({ message: 'User not found' });
-//         }
-
-//         const tempPassword = crypto.randomBytes(6).toString('hex');
-//         const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
-//         user.password = hashedTempPassword;
-//         await user.save();
-
-//         const transporter = nodemailer.createTransport({
-//             service: 'gmail',
-//             auth: {
-//                 user: process.env.EMAIL_USER,
-//                 pass: process.env.EMAIL_PASS
-//             }
-//         });
-
-//         const mailOptions = {
-//             from: process.env.EMAIL_USER, // עדיף שהמייל ישלח מהכתובת הזו
-//             to: email,
-//             subject: 'Your temporary password',
-//             text: `Your temporary password is: ${tempPassword}`
-//         };
-
-//         try {
-//             await transporter.sendMail(mailOptions);
-//             console.log('Email sent successfully');
-//             res.status(200).json({ message: 'Temporary password sent to email' });
-//         } catch (error) {
-//             console.error('Error sending email:', error);
-//             res.status(500).json({ message: 'Failed to send email' });
-//         }
-
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).json({ message: 'Server error' });
-//     }
-// }
-
-module.exports = { createUser, deleteUser, getUser, getUserById, getAllUser,forgotPassword };
+module.exports = { createUser, deleteUser, getUser, getUserById, getAllUser,forgotPassword,SendMark };

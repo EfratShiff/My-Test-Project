@@ -2,7 +2,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-// ייבוא קומפוננטות MUI
 import { 
   Box,  Typography,   Card,  CardContent,  CardHeader,CardActions,   
   Button, 
@@ -21,7 +20,6 @@ import {
   DialogContentText,
   DialogTitle
 } from "@mui/material";
-// ייבוא אייקונים של MUI
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -74,22 +72,17 @@ const ViewTests = () => {
             names[id] = "שגיאה";
           }
         }
-
         setTeachersNames(names);
       }
     };
-
     fetchTeachers();
   }, [tests]);
-
   const handleClick = (testId) => {
     const token = localStorage.getItem("token");
-
-    // אם לא נמצא טוקן
     if (!token) {
       alert("לא נמצא טוקן, התחבר שוב");
-      return; // יצא מהפונקציה אם אין טוקן
-    }
+      return; 
+      }
 
     const decoded = jwtDecode(token);
     const role = decoded.role;
@@ -98,35 +91,23 @@ const ViewTests = () => {
       alert("לא נמצא מבחן עם מזהה זה.");
       return;
     }
-    // קבלת התאריך הנוכחי
     const currentDate = new Date();
-    // המרת התאריך מהדאטה בייס לאובייקט Date
     const lastDate = new Date(test.lastDate);
-    // אם התפקיד הוא מורה, אפשר להיכנס תמיד
     if (role === "teacher") {
       navigate(`/SolveTest/${testId}`);
-      return; // מורה תמיד יכול לגשת למבחן
-    }
-
-    // אם התאריך של המבחן עבר, תלמיד לא יכול לגשת
+      return;     }
     if (lastDate < currentDate) {
       alert("המבחן עבר את תאריך ההגשה. תלמיד לא יכול לגשת למבחן.");
-      return; // יצא מהפונקציה אם המבחן עבר
-    }
+      return;    }
     navigate(`/SolveTest/${testId}`);
   };
-
-  // פונקציה שמחשבת את הזמן שנותר עד למועד האחרון
   const getRemainingTime = (lastDate) => {
     const now = new Date();
     const deadline = new Date(lastDate);
     const diff = deadline - now;
-    
     if (diff <= 0) return "הזמן תם";
-    
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
     if (days > 0) {
       return `${days} ימים ו-${hours} שעות`;
     } else {
@@ -134,8 +115,6 @@ const ViewTests = () => {
       return `${hours} שעות ו-${minutes} דקות`;
     }
   };
-
-  // פונקציה להגדרת סטייל של כרטיס מבחן לפי סטטוס
   const getCardStyle = (isExpired) => {
     return {
       height: '100%',
@@ -150,11 +129,8 @@ const ViewTests = () => {
       backgroundColor: isExpired ? '#fff8f8' : '#ffffff'
     };
   };
-  
   const [isEditingTest, setIsEditingTest] = useState(null);
   const [newTestTitle, setNewTestTitle] = useState("");
-  
-  // פונקציה לבדיקה אם המשתמש הוא מורה
   const isTeacher = () => {
     const token = localStorage.getItem("token");
     if (!token) return false;
@@ -166,38 +142,28 @@ const ViewTests = () => {
       return false;
     }
   };
-  
-  // פונקציה לעדכון שם המבחן
   const updateTestTitle = async (testId) => {
     if (!newTestTitle.trim()) {
       alert("שם המבחן לא יכול להיות ריק");
       return;
     }
     try {
-      // מציאת המבחן הנוכחי
       const currentTest = tests.find(test => test._id === testId);
       alert(currentTest)
       if (!currentTest) {
         throw new Error("לא נמצא מבחן לעדכון");
       }
-
       console.log("מבחן נוכחי שנמצא:", currentTest);
       console.log("ID של המבחן:", currentTest._id);
-
-      // שליחת בקשה לעדכון רק את השם
       const response = await axios.put(`http://localhost:8080/Test/updateTest/${currentTest._id}`, {
         title: newTestTitle,
-        _id: currentTest._id // שולחים גם את ה-ID בגוף הבקשה
-      });
-      
+        _id: currentTest._id 
+         });
       console.log("תגובה מהשרת:", response.data);
-
       if (response.data) {
-        // עדכון המבחנים במצב המקומי
         setTests(prevTests => prevTests.map(test => 
           test._id === testId ? { ...test, title: newTestTitle } : test
         ));
-        
         setIsEditingTest(null);
         setNewTestTitle("");
       } else {
@@ -213,39 +179,29 @@ const ViewTests = () => {
       });
       
       if (error.response) {
-        // השגיאה הגיעה מהשרת
         alert(`שגיאה בעדכון שם המבחן: ${error.response.data.message || error.response.data}`);
       } else if (error.request) {
-        // הבקשה נשלחה אבל לא התקבלה תשובה
         alert("לא התקבלה תשובה מהשרת. אנא נסה שוב מאוחר יותר.");
       } else {
-        // שגיאה אחרת
         alert(`שגיאה בעדכון שם המבחן: ${error.message}`);
       }
     }
   };
-  
-  // פונקציה להפעלת מצב עריכה
   const startEditingTest = (test) => {
     setIsEditingTest(test._id);
     setNewTestTitle(test.title);
   };
-
-  // פונקציה לקבלת רשימת המורים הייחודיים
   const getUniqueTeachers = () => {
     const uniqueTeacherIds = [...new Set(tests.map(test => test.teacherId))];
     return uniqueTeacherIds.map(id => ({
       id,
       name: teachersNames[id] || "טעינה..."
-    })).filter(teacher => teacher.id); // מסנן מורים ללא מזהה
+    })).filter(teacher => teacher.id);
   };
-
-  // פונקציה לסינון מבחנים לפי מורה
   const getFilteredTests = () => {
     if (!selectedTeacher) return tests;
     return tests.filter(test => test.teacherId === selectedTeacher);
   };
-
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh" flexDirection="column">
@@ -254,7 +210,6 @@ const ViewTests = () => {
       </Box>
     );
   }
-
   if (error) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
@@ -264,10 +219,8 @@ const ViewTests = () => {
       </Container>
     );
   }
-
   const uniqueTeachers = getUniqueTeachers();
   const filteredTests = getFilteredTests();
-
   return (
     <Container maxWidth="lg" dir="rtl" sx={{ mt: 4, mb: 8 }}>
       <Box textAlign="center" mb={6}>
@@ -285,8 +238,6 @@ const ViewTests = () => {
           לחץ על מבחן כדי לפתוח אותו
         </Typography>
       </Box>
-
-      {/* כפתורי המורים */}
       <Box sx={{ mb: 4, display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
         <Button
           variant={selectedTeacher === null ? "contained" : "outlined"}
@@ -308,7 +259,6 @@ const ViewTests = () => {
           </Button>
         ))}
       </Box>
-
       {filteredTests.length === 0 ? (
         <Paper 
           elevation={2} 
@@ -332,10 +282,7 @@ const ViewTests = () => {
             const isExpired = lastDate < currentDate;
             const remainingTime = getRemainingTime(test.lastDate);
             const userIsTeacher = isTeacher();
-            
-            // קביעת גודל שונה לכרטיס האמצעי
             const isMiddleCard = index === Math.floor(filteredTests.length / 2);
-            
             return (
               <Grid 
                 item 
@@ -454,7 +401,7 @@ const ViewTests = () => {
                         sx={{ 
                           fontWeight: 'bold',
                           py: 1,
-                          height: '42px' // קביעת גובה קבוע לכפתור
+                          height: '42px' 
                         }}
                       >
                         {isExpired ? (userIsTeacher ? 'צפה במבחן' : 'המבחן סגור') : 'פתח מבחן'}
@@ -470,5 +417,4 @@ const ViewTests = () => {
     </Container>
   );
 };
-
 export default ViewTests;
