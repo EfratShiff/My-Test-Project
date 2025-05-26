@@ -1,19 +1,343 @@
-import { Button } from "@mui/material";
-import { Link } from "react-router-dom";
+// import { Button } from "@mui/material";
+// import { Link } from "react-router-dom";
 
-const StudentMenu = () => {
-    return(
-        <>
-        StudentMenu
+// const StudentMenu = () => {
+//     return(
+//         <>
+//         StudentMenu
 
 
-        <Button color="inherit" component={Link} to="/ViewTests" sx={{ fontSize: 18 }}>
-              לפתרון מבחן
-          </Button> 
-        <Button color="inherit" component={Link} to="/ViewRezultTest" sx={{ fontSize: 18 }}>
-            לצפיה בתוצאות המבחנים
-          </Button>
-        </>
-    )
-}
-    export default StudentMenu;
+//         <Button color="inherit" component={Link} to="/ViewTests" sx={{ fontSize: 18 }}>
+//               לפתרון מבחן
+//           </Button> 
+//         <Button color="inherit" component={Link} to="/ViewRezultTest" sx={{ fontSize: 18 }}>
+//             לצפיה בתוצאות המבחנים
+//           </Button>
+//         </>
+//     )
+// }
+//     export default StudentMenu;
+
+
+
+
+
+
+
+
+
+
+
+import { 
+    Box, 
+    Button, 
+    Container, 
+    Typography, 
+    Paper, 
+    Grid, 
+    Card, 
+    CardContent, 
+    CardActions,
+    Fade,
+    useTheme,
+    alpha
+  } from "@mui/material";
+  import { Link } from "react-router-dom";
+  import { 
+    Quiz as QuizIcon, 
+    Assessment as AssessmentIcon
+  } from "@mui/icons-material";
+  
+  const StudentMenu = () => {
+    const theme = useTheme();
+  
+    const menuItems = [
+      {
+        title: "פתרון מבחן",
+        description: "התחל מבחן חדש וצבור נקודות",
+        icon: <QuizIcon sx={{ fontSize: 40 }} />,
+        link: "/ViewTests",
+        gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        hoverGradient: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)"
+      },
+      {
+        title: "תוצאות המבחנים",
+        description: "צפה בביצועים והישגים שלך",
+        icon: <AssessmentIcon sx={{ fontSize: 40 }} />,
+        link: "/ViewRezultTest", 
+        gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+        hoverGradient: "linear-gradient(135deg, #e081e9 0%, #e3455a 100%)"
+      }
+    ];
+  
+    return (
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        {/* Header Section */}
+        <Fade in timeout={800}>
+          <Box textAlign="center" mb={6}>
+            <Typography 
+              variant="h2" 
+              component="h1" 
+              sx={{ 
+                fontWeight: 800,
+                background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                mb: 2,
+                fontSize: { xs: '2.5rem', md: '3.5rem' }
+              }}
+            >
+              פורטל התלמיד
+            </Typography>
+            <Typography 
+              variant="h5" 
+              color="text.secondary" 
+              sx={{ 
+                fontWeight: 300,
+                maxWidth: 600,
+                mx: 'auto',
+                lineHeight: 1.6
+              }}
+            >
+              ברוך הבא למערכת המבחנים הדיגיטלית שלנו
+            </Typography>
+          </Box>
+        </Fade>
+  
+        {/* Menu Cards */}
+        <Grid container spacing={4} justifyContent="center">
+          {menuItems.map((item, index) => (
+            <Grid item xs={12} sm={6} md={5} key={index}>
+              <Fade in timeout={1000 + index * 200}>
+                <Card
+                  component={Link}
+                  to={item.link}
+                  sx={{
+                    height: '100%',
+                    textDecoration: 'none',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: 4,
+                    background: item.gradient,
+                    transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    transform: 'translateY(0)',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                    '&:hover': {
+                      transform: 'translateY(-8px) scale(1.02)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                      background: item.hoverGradient,
+                    },
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                    },
+                    '&:hover::before': {
+                      opacity: 1,
+                    }
+                  }}
+                >
+                  <CardContent 
+                    sx={{ 
+                      color: 'white',
+                      textAlign: 'center',
+                      py: 6,
+                      position: 'relative',
+                      zIndex: 1
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        mb: 3,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: 80,
+                        height: 80,
+                        borderRadius: '50%',
+                        background: alpha('#ffffff', 0.2),
+                        backdropFilter: 'blur(10px)',
+                        mx: 'auto',
+                        transition: 'transform 0.3s ease',
+                        '&:hover': {
+                          transform: 'rotate(360deg)'
+                        }
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                    
+                    <Typography 
+                      variant="h4" 
+                      component="h2" 
+                      sx={{ 
+                        fontWeight: 700,
+                        mb: 2,
+                        fontSize: { xs: '1.5rem', md: '2rem' }
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
+                    
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        opacity: 0.9,
+                        fontSize: '1.1rem',
+                        lineHeight: 1.6
+                      }}
+                    >
+                      {item.description}
+                    </Typography>
+                  </CardContent>
+  
+                  <CardActions sx={{ justifyContent: 'center', pb: 4 }}>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      sx={{
+                        background: 'rgba(255,255,255,0.9)',
+                        color: '#1a1a1a',
+                        border: '2px solid rgba(255,255,255,1)',
+                        borderRadius: 3,
+                        px: 4,
+                        py: 1.5,
+                        fontSize: '1.3rem',
+                        fontWeight: 800,
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: '#ffffff',
+                          transform: 'scale(1.08)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
+                          color: '#000'
+                        }
+                      }}
+                    >
+                      {item.title}
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Fade>
+            </Grid>
+          ))}
+        </Grid>
+  
+        {/* Floating Action Buttons */}
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 30,
+            right: 30,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            zIndex: 1000
+          }}
+        >
+          <Fade in timeout={2000}>
+            <Paper
+              elevation={8}
+              sx={{
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                animation: 'pulse 2s infinite',
+                '@keyframes pulse': {
+                  '0%': {
+                    boxShadow: '0 0 0 0 rgba(255, 107, 107, 0.7)'
+                  },
+                  '70%': {
+                    boxShadow: '0 0 0 10px rgba(255, 107, 107, 0)'
+                  },
+                  '100%': {
+                    boxShadow: '0 0 0 0 rgba(255, 107, 107, 0)'
+                  }
+                },
+                '&:hover': {
+                  transform: 'scale(1.1)',
+                  boxShadow: '0 8px 25px rgba(255, 107, 107, 0.4)'
+                }
+              }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>↑</Typography>
+            </Paper>
+          </Fade>
+        </Box>
+  
+        {/* Background Animations */}
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: -1,
+            overflow: 'hidden'
+          }}
+        >
+          {[...Array(6)].map((_, i) => (
+            <Box
+              key={i}
+              sx={{
+                position: 'absolute',
+                width: Math.random() * 100 + 50,
+                height: Math.random() * 100 + 50,
+                borderRadius: '50%',
+                background: `linear-gradient(45deg, ${
+                  ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'][i]
+                }, transparent)`,
+                opacity: 0.1,
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animation: `float${i} ${10 + Math.random() * 10}s ease-in-out infinite`,
+                '@keyframes float0': {
+                  '0%, 100%': { transform: 'translateY(0px) rotate(0deg)', opacity: 0.1 },
+                  '50%': { transform: 'translateY(-20px) rotate(180deg)', opacity: 0.2 }
+                },
+                '@keyframes float1': {
+                  '0%, 100%': { transform: 'translateX(0px) rotate(0deg)', opacity: 0.1 },
+                  '50%': { transform: 'translateX(20px) rotate(-180deg)', opacity: 0.15 }
+                },
+                '@keyframes float2': {
+                  '0%, 100%': { transform: 'translateY(0px) translateX(0px)', opacity: 0.1 },
+                  '50%': { transform: 'translateY(-15px) translateX(15px)', opacity: 0.2 }
+                },
+                '@keyframes float3': {
+                  '0%, 100%': { transform: 'scale(1) rotate(0deg)', opacity: 0.1 },
+                  '50%': { transform: 'scale(1.1) rotate(90deg)', opacity: 0.15 }
+                },
+                '@keyframes float4': {
+                  '0%, 100%': { transform: 'translateY(0px) rotate(0deg)', opacity: 0.1 },
+                  '50%': { transform: 'translateY(25px) rotate(-90deg)', opacity: 0.2 }
+                },
+                '@keyframes float5': {
+                  '0%, 100%': { transform: 'translateX(0px) scale(1)', opacity: 0.1 },
+                  '50%': { transform: 'translateX(-20px) scale(1.2)', opacity: 0.15 }
+                }
+              }}
+            />
+          ))}
+        </Box>
+      </Container>
+    );
+  };
+  
+  export default StudentMenu;
