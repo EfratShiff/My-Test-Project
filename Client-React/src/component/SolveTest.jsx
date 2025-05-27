@@ -1,3 +1,4 @@
+
 import { useNavigate, useParams } from "react-router-dom";
 import { use, useEffect, useState } from "react";
 import axios from "axios";
@@ -37,6 +38,7 @@ const SolveTest = () => {
   const [scoreError, setScoreError] = useState(null);
   const role = localStorage.getItem("role");
   const navigate = useNavigate();
+
   useEffect(() => {
     const fetchTest = async () => {
       try {
@@ -62,7 +64,8 @@ const SolveTest = () => {
         setTimer((prev) => {
           if (prev + 1 >= questionTimeLimit) {
             clearInterval(id);
-            goToNextQuestion();
+            // כשנגמר הזמן, נרשום -1 כתשובה ונעבור לשאלה הבאה
+            handleTimeUp();
           }
           return prev + 1;
         });
@@ -105,8 +108,6 @@ const SolveTest = () => {
                 alert("שגיאה בשליחת הבקשה");
             }
 
-
-
         alert("תוצאות נשלחו בהצלחה");
       } catch (error) {
         console.error("שגיאה בשליחת התוצאות:", error);
@@ -119,26 +120,44 @@ const SolveTest = () => {
     }
   }, [currentQuestionIndex, test, userAnswers, testId]);
 
-  const handleAnswerClick = (index) => {
-    setSelectedAnswer(index);
+  // פונקציה חדשה לטיפול בפקיעת זמן
+  const handleTimeUp = () => {
+    console.log("הזמן נגמר - רושם -1 כתשובה");
+    recordAnswer(-1);
+  };
 
+  // פונקציה לרישום תשובה (משותפת לבחירה ופקיעת זמן)
+  const recordAnswer = (answerIndex) => {
     setUserAnswers((prev) => {
       const newAnswers = [...prev];
       newAnswers[currentQuestionIndex] = {
         questionId: test.questions[currentQuestionIndex]._id,
-        selectedOptionIndex: index,
+        selectedOptionIndex: answerIndex,
       };
+      console.log("נרשמה תשובה:", {
+        questionIndex: currentQuestionIndex,
+        answerIndex: answerIndex,
+        questionId: test.questions[currentQuestionIndex]._id
+      });
       return newAnswers;
     });
 
-    clearInterval(intervalId);
+    // נקה את הטיימר אם הוא עדיין פועל
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+    
     goToNextQuestion();
+  };
+
+  const handleAnswerClick = (index) => {
+    setSelectedAnswer(index);
+    recordAnswer(index);
   };
 
   const goToNextQuestion = () => {
     setCurrentQuestionIndex((prev) => prev + 1);
   };
-
 
   if (!test) {
     return (
@@ -200,7 +219,6 @@ const SolveTest = () => {
   const timeProgress = test.questions[currentQuestionIndex].timeLimit > 0 
     ? (timer / test.questions[currentQuestionIndex].timeLimit) * 100 
     : 0;
-
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>

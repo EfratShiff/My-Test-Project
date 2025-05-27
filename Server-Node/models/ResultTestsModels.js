@@ -5,7 +5,7 @@
             studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // מזהה התלמיד
             answers: [{
                 questionId: { type: mongoose.Schema.Types.ObjectId, required: true }, // מזהה השאלה
-                selectedOptionIndex: { type: Number, required: true } // האינדקס של התשובה שהסטודנט בחר
+                selectedOptionIndex: { type: Number, required: true, default: -1 }
             }],
             Mark: { 
                 type: Number, 
