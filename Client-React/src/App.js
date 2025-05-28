@@ -31,6 +31,7 @@ function App() {
             <Route path="/TeacherMenu" element={<TeacherMenuLazy />} />
             <Route path="/StudentMenu" element={<StudentMenuLazy />} />
             <Route path="/ViewRezultTest" element={<ViewRezultTestLazy />} />
+            <Route path="/ViewRezultTest/:testId" element={<ViewRezultTestLazy />} />
             <Route path="/forgot-password" element={<ForgotPasswordLazy />} />
           </Routes>
         </Suspense>

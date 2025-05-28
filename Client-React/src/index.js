@@ -6,23 +6,25 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
-import TestSlice from './store/TestSlice';
+import testReducer from './store/TestSlice';
+import userReducer from './store/UserSlice';
 
-const myStore = configureStore({
-  reducer:{
-    TestSlice
-    }
-})
+const store = configureStore({
+  reducer: {
+    test: testReducer,
+    User: userReducer
+  }
+});
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <Provider store={myStore}>
-    <BrowserRouter>
-    <App />
-    </BrowserRouter>
-  </Provider>
+  <React.StrictMode>
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
+  </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

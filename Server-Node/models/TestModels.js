@@ -1,15 +1,21 @@
 const mongoose = require('mongoose');
 
 const TestSchema = new mongoose.Schema({
-    title: { type: String, required: true }, 
+    title: { type: String, required: true },
     questions: [{
-        questionText: { type: String, required: true }, 
-        options: [{ type: String, required: true }], 
-        correctAnswer: { type: String, required: true }, 
+        questionText: { type: String, required: true },
+        options: [{ type: String, required: true }],
+        correctAnswer: { type: String, required: true },
         timeLimit: { type: Number, default: 0 }
     }],
-    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserSchema', required: true },   
-    lastDate: { type: Date, required: true } 
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserSchema', required: true },
+    lastDate: { type: Date, required: true },
+
+    // כאן תוסיפי את המערך החדש:
+    studentResults: [{
+        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserSchema', required: true },
+        score: { type: Number, required: true },
+    }]
 });
 
 const Test = mongoose.model('TestSchema', TestSchema);

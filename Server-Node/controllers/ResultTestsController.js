@@ -113,7 +113,7 @@ async function createResultTest(req, res) {
 
         const test = await Test.findById(TestId);
         if (!test) {
-            return res.status(404).json({ error: " מבחן לא נמצא. יש לבדוק את TestId." });
+            return res.status(404).json({ error: "מבחן לא נמצא. יש לבדוק את TestId." });
         }
 
         let correctAnswersCount = 0;
@@ -141,10 +141,32 @@ async function createResultTest(req, res) {
         });
 
         await newResult.save();
+
+        // עדכון מערך studentResults במבחן
+        const studentResult = {
+            studentId: studentId,
+            score: finalScore
+        };
+
+        // בדיקה אם התלמיד כבר קיים במערך
+        const existingResultIndex = test.studentResults.findIndex(
+            result => result.studentId.toString() === studentId.toString()
+        );
+
+        if (existingResultIndex !== -1) {
+            // עדכון תוצאה קיימת
+            test.studentResults[existingResultIndex].score = finalScore;
+        } else {
+            // הוספת תוצאה חדשה
+            test.studentResults.push(studentResult);
+        }
+
+        await test.save();
+
         res.status(201).json(newResult);
     } catch (error) {
-        console.error(" שגיאה:", error);
-        res.status(500).json({ error: " שגיאה פנימית בשרת" });
+        console.error("שגיאה:", error);
+        res.status(500).json({ error: "שגיאה פנימית בשרת" });
     }
 }
 

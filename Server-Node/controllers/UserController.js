@@ -23,7 +23,7 @@ async function createUser(req, res) {
         const token = jwt.sign(
             { userId: newUser._id, role: newUser.role }, 
             process.env.JWT_SECRET,
-            { expiresIn: '10h' }
+             { expiresIn: '1h' }
         );
 
         res.status(201).json({
@@ -213,25 +213,24 @@ async function getAllUser(req, res) {
 
 async function getUser(req, res) {
     const { email, password, roleToCheck } = req.body;
-
     try {
         const user = await User.findOne({ email });
         if (!user) return res.status(401).json({ error: 'User not found' });
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(401).json({ error: 'Invalid password' });
+        if (!isMatch) return res.status(401).json({ error: 'Invalid password' });   
 
         if (roleToCheck && user.role !== roleToCheck) {
             return res.status(403).json({ error: 'User is not a ' + roleToCheck });
         }
-
+        
         const token = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
-
-        res.status(200).json({ token, role: user.role });
+        console.log(user.name);
+        res.status(200).json({ token, role: user.role, name: user.name });
     } catch (err) {
         res.status(500).json({ error: 'Server error' });
     }

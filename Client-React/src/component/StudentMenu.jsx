@@ -28,6 +28,8 @@
 
 
 
+import React from 'react';
+import { useSelector } from 'react-redux';
 import { 
     Box, 
     Button, 
@@ -42,14 +44,17 @@ import {
     useTheme,
     alpha
   } from "@mui/material";
-  import { Link } from "react-router-dom";
+  import { Link, useNavigate } from "react-router-dom";
   import { 
     Quiz as QuizIcon, 
     Assessment as AssessmentIcon
   } from "@mui/icons-material";
+  import axios from "axios";
   
   const StudentMenu = () => {
     const theme = useTheme();
+    const navigate = useNavigate();
+    const userName = useSelector((state) => state.User.userName);
   
     const menuItems = [
       {
@@ -70,6 +75,36 @@ import {
       }
     ];
   
+    const handleTestClick = async (test) => {
+        try {
+            // בדיקה אם התלמיד כבר נבחן במבחן זה
+            const response = await axios.get(`http://localhost:8080/Result/check-test/${test._id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (response.data.hasTakenTest) {
+                alert("כבר נבחנת על מבחן זה!");
+                return;
+            }
+
+            // אם לא נבחן, ממשיך לפתיחת המבחן
+            navigate(`/Test/${test._id}`);
+        } catch (error) {
+            console.error("Error checking test status:", error);
+            alert("שגיאה בבדיקת סטטוס המבחן");
+        }
+    };
+  
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('email');
+        localStorage.removeItem('name');
+        navigate('/login');
+    };
+  
     return (
       <Container maxWidth="lg" sx={{ py: 6 }}>
         {/* Header Section */}
@@ -80,7 +115,7 @@ import {
               component="h1" 
               sx={{ 
                 fontWeight: 800,
-                background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+                background: "linear-gradient(45deg, #11998e 30%, #38ef7d 90%)",
                 backgroundClip: "text",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -88,7 +123,7 @@ import {
                 fontSize: { xs: '2.5rem', md: '3.5rem' }
               }}
             >
-              פורטל התלמיד
+              שלום לתלמיד {userName}
             </Typography>
             <Typography 
               variant="h5" 
@@ -100,8 +135,16 @@ import {
                 lineHeight: 1.6
               }}
             >
-              ברוך הבא למערכת המבחנים הדיגיטלית שלנו
+              ברוך הבא למערכת המבחנים
             </Typography>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={handleLogout}
+              sx={{ mt: 2 }}
+            >
+              התנתקות
+            </Button>
           </Box>
         </Fade>
   

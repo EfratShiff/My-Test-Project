@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
@@ -40,8 +39,10 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SchoolIcon from '@mui/icons-material/School';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import CloseIcon from '@mui/icons-material/Close';
+import { useParams } from 'react-router-dom';
 
 const ViewRezultTest = () => {
+  const { testId } = useParams();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -56,65 +57,72 @@ const ViewRezultTest = () => {
     const fetchResults = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `http://localhost:8080/Result/getStudentTestResultByStudentID/${studentId}`
-        );
-        const rawResults = response.data.results || response.data;
+        let response;
+        
+        if (testId) {
+          // אם יש מזהה מבחן, נביא רק את התוצאות של המבחן הספציפי
+          response = await axios.get(`http://localhost:8080/Result/getStudentTestResult/${testId}/${studentId}`);
+          setResults([response.data]);
+        } else {
+          // אחרת, נביא את כל התוצאות
+          response = await axios.get(`http://localhost:8080/Result/getStudentTestResultByStudentID/${studentId}`);
+          const rawResults = response.data.results || response.data;
 
-        const enrichedResults = await Promise.all(
-          rawResults.map(async (result) => {
-            try {
-              const testRes = await axios.get(
-                `http://localhost:8080/Test/getTest/${result.TestId}`
-              );
-              console.log(" נשלח לשרת:", testRes.data);
-              
-              let teacherDetails = null;
-              if (testRes.data.teacherId) {
-                try {
-                  const teacherRes = await axios.get(
-                    `http://localhost:8080/User/getUser/${testRes.data.teacherId}`
-                  );
-                  teacherDetails = teacherRes.data;
-                } catch (teacherErr) {
-                  console.warn(" שגיאה בשליפת מורה:", testRes.data.teacherId, teacherErr);
-                  teacherDetails = { firstName: "לא זמין", lastName: "" };
+          const enrichedResults = await Promise.all(
+            rawResults.map(async (result) => {
+              try {
+                const testRes = await axios.get(`http://localhost:8080/Test/getTest/${result.TestId}`);
+                console.log("נשלח לשרת:", testRes.data);
+                
+                let teacherDetails = null;
+                if (testRes.data.teacherId) {
+                  try {
+                    const teacherRes = await axios.get(`http://localhost:8080/User/getUser/${testRes.data.teacherId}`);
+                    teacherDetails = teacherRes.data;
+                  } catch (teacherErr) {
+                    console.warn("שגיאה בשליפת מורה:", testRes.data.teacherId, teacherErr);
+                    teacherDetails = { firstName: "לא זמין", lastName: "" };
+                  }
                 }
+                
+                return {
+                  ...result,
+                  testDetails: testRes.data,
+                  teacherDetails: teacherDetails,
+                };
+              } catch (err) {
+                console.warn("שגיאה בשליפת מבחן:", result.TestId, err);
+                return {
+                  ...result,
+                  testDetails: { name: "שגיאה בשליפה" },
+                  teacherDetails: { firstName: "לא זמין", lastName: "" },
+                };
               }
-              
-              return {
-                ...result,
-                testDetails: testRes.data,
-                teacherDetails: teacherDetails,
-              };
-            } catch (err) {
-              console.warn(" שגיאה בשליפת מבחן:", result.TestId, err);
-              return {
-                ...result,
-                testDetails: { name: "שגיאה בשליפה" },
-                teacherDetails: { firstName: "לא זמין", lastName: "" },
-              };
-            }
-          })
-        );
-        setResults(enrichedResults);
+            })
+          );
+          setResults(enrichedResults);
+        }
       } catch (error) {
-        console.error(" שגיאה בשליפת תוצאות:", error);
+        console.error("שגיאה בשליפת תוצאות:", error);
         setError("שגיאה בטעינת תוצאות המבחנים");
       } finally {
         setLoading(false);
       }
     };
+
     fetchResults();
-  }, []);
+  }, [testId]);
+
   const handleOpenDialog = (result) => {
     setSelectedResult(result);
     setDialogOpen(true);
   };
+
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setSelectedResult(null);
   };
+
   const renderScore = (score) => {
     const scoreValue = Math.round(score ?? 0);
     let color = "primary";
@@ -226,10 +234,10 @@ const ViewRezultTest = () => {
       <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2, background: 'linear-gradient(to right, #e0f7fa, #f5f5f5)' }}>
         <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
           <AssignmentIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-          תוצאות מבחנים
+          {testId ? 'תוצאות המבחן' : 'תוצאות מבחנים'}
         </Typography>
         <Typography variant="subtitle1" align="center" color="text.secondary">
-          צפייה בכל תוצאות המבחנים שלך
+          {testId ? 'צפייה בתוצאות המבחן הנוכחי' : 'צפייה בכל תוצאות המבחנים שלך'}
         </Typography>
       </Paper>
 
@@ -251,7 +259,7 @@ const ViewRezultTest = () => {
                   }
                 }}>
                   <CardHeader
-                    avatar={renderTestAvatar(result.testDetails.questions)}
+                    avatar={renderTestAvatar(result.testDetails?.questions)}
                     action={
                       <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
                         {getAchievementIcon(result.Mark)}
@@ -260,7 +268,7 @@ const ViewRezultTest = () => {
                     }
                     title={
                       <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                        {result.testDetails.title || "ללא שם"}
+                        {result.testDetails?.title || "ללא שם"}
                       </Typography>
                     }
                     subheader={
@@ -272,7 +280,7 @@ const ViewRezultTest = () => {
                         <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
                           <FormatListNumberedIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
                           <Typography variant="body2" color="text.secondary">
-                            {result.testDetails.questions?.length || 0} שאלות
+                            {result.testDetails?.questions?.length || 0} שאלות
                           </Typography>
                         </Box>
                       </Box>
@@ -296,6 +304,7 @@ const ViewRezultTest = () => {
           ))}
         </Grid>
       )}
+
       <Dialog 
         open={dialogOpen} 
         onClose={handleCloseDialog}
@@ -330,7 +339,7 @@ const ViewRezultTest = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <FormatListNumberedIcon sx={{ color: 'text.secondary', mr: 1 }} />
                       <Typography variant="body1">
-                        מספר שאלות: {selectedResult.testDetails.questions?.length || 0}
+                        מספר שאלות: {selectedResult.testDetails?.questions?.length || 0}
                       </Typography>
                     </Box>
                   </Grid>
@@ -348,7 +357,7 @@ const ViewRezultTest = () => {
                 שאלות ותשובות
               </Typography>
               <Stack spacing={2}>
-                {selectedResult.testDetails.questions?.map((q, qIndex) => {
+                {selectedResult.testDetails?.questions?.map((q, qIndex) => {
                   const studentAnswer = selectedResult.answers?.find(
                     (a) => a.questionId === q._id
                   );
@@ -430,4 +439,5 @@ const ViewRezultTest = () => {
     </Container>
   );
 };
+
 export default ViewRezultTest;

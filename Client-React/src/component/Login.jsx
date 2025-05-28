@@ -2,24 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useForm } from "react-hook-form";
 import { useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Container, 
-  TextField, 
-  Button, 
-  Typography, 
-  Paper, 
-  Grid, 
-  Divider, 
-  Alert, 
-  IconButton, 
-  InputAdornment,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Select,
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserName } from '../store/UserSlice';
+import {Box, Container,TextField,Button,Typography,Paper,Grid,Divider,Alert, IconButton,   
+   InputAdornment, Dialog,DialogActions,DialogContent,DialogContentText,DialogTitle,Select,
   MenuItem,
   FormControl,
   InputLabel,
@@ -36,6 +22,7 @@ import {
 
 const Login = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [showPassword, setShowPassword] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -87,6 +74,8 @@ const Login = () => {
         formState: { errors: tempPasswordErrors }
     } = useForm();
 
+    const userName = useSelector((state) => state.User.userName);
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
@@ -106,17 +95,22 @@ const Login = () => {
             setUserNotFound(false);
             setShowAdminLogin(false);
             const res = await axios.post('http://localhost:8080/User/getUser', data);
+            console.log("Server response:", res.data);
             const token = res.data.token;
             const role = res.data.role;
-            const email = data.email; 
+            const email = data.email;
+            const name = res.data.name;
+            
             if (token) {
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', role);
                 localStorage.setItem('email', email);
-                setEmail(email); 
+                localStorage.setItem('name', name);
+                dispatch(setUserName(name));
+                setEmail(email);
                 alert("התחברת בהצלחה!");
 
-                if (role === 'manager') {
+                if (role == 'manager') {
                     alert("ברוך הבא מנהל!");
                     setIsManager(true);
                     navigate('/ManagerMenu');
@@ -193,6 +187,8 @@ const Login = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         localStorage.removeItem('email');
+        localStorage.removeItem('name');
+        dispatch(setUserName(''));
         setIsManager(false);
         navigate('/login');
     };
