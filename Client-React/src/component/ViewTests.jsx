@@ -135,44 +135,82 @@ const ViewTests = () => {
     fetchTeachers();
   }, [tests]);
 
+  // const handleTestClick = (test) => {
+  //   const token = localStorage.getItem('token');
+  //   if (!token) {
+  //     alert('נא להתחבר מחדש');
+  //     return;
+  //   }
+
+  //   const decoded = jwtDecode(token);
+  //   const userId = decoded.userId;
+  //   const role = decoded.role;
+
+  //   // אם זה מורה, תמיד אפשר לו לגשת למבחן
+  //   if (role === 'teacher') {
+  //     navigate(`/SolveTest/${test._id}`);
+  //     return;
+  //   }
+
+  //   // בדיקה אם התלמידה כבר נבחנה במבחן
+  //   const hasAlreadyTakenTest = test.studentResults?.some(result => 
+  //     result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
+  //   );
+
+  //   if (hasAlreadyTakenTest) {
+  //     // במקום לנווט לדף חדש, נציג את התוצאות בדיאלוג
+  //     const result = test.studentResults.find(r => 
+  //       r.studentId && (r.studentId === userId || r.studentId.toString() === userId)
+  //     );
+      
+  //     if (result) {
+  //       setSelectedResult({
+  //         ...result,
+  //         testDetails: test
+  //       });
+  //       setDialogOpen(true);
+  //     }
+  //     return;
+  //   }
+
+  //   // בדיקת תאריך סיום
+  //   const now = new Date();
+  //   const endDate = new Date(test.lastDate);
+  //   if (now > endDate) {
+  //     alert('המבחן הסתיים');
+  //     return;
+  //   }
+
+  //   navigate(`/SolveTest/${test._id}`);
+  // };
+
   const handleTestClick = (test) => {
     const token = localStorage.getItem('token');
     if (!token) {
       alert('נא להתחבר מחדש');
       return;
     }
-
+  
     const decoded = jwtDecode(token);
     const userId = decoded.userId;
     const role = decoded.role;
-
+  
     // אם זה מורה, תמיד אפשר לו לגשת למבחן
     if (role === 'teacher') {
       navigate(`/SolveTest/${test._id}`);
       return;
     }
-
+  
     // בדיקה אם התלמידה כבר נבחנה במבחן
     const hasAlreadyTakenTest = test.studentResults?.some(result => 
       result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
     );
-
+  
     if (hasAlreadyTakenTest) {
-      // במקום לנווט לדף חדש, נציג את התוצאות בדיאלוג
-      const result = test.studentResults.find(r => 
-        r.studentId && (r.studentId === userId || r.studentId.toString() === userId)
-      );
-      
-      if (result) {
-        setSelectedResult({
-          ...result,
-          testDetails: test
-        });
-        setDialogOpen(true);
-      }
+      // מנע גישה למבחן שכבר בוצע - פשוט לא תעשה כלום
       return;
     }
-
+  
     // בדיקת תאריך סיום
     const now = new Date();
     const endDate = new Date(test.lastDate);
@@ -180,7 +218,7 @@ const ViewTests = () => {
       alert('המבחן הסתיים');
       return;
     }
-
+  
     navigate(`/SolveTest/${test._id}`);
   };
 
@@ -247,6 +285,48 @@ const ViewTests = () => {
     }
   };
 
+  // const getTestStatus = (test, userId) => {
+  //   const now = new Date();
+  //   const endDate = new Date(test.lastDate);
+  //   const isExpired = now > endDate;
+    
+  //   // בדיקה אם המשתמש הנוכחי כבר נבחן במבחן
+  //   const currentUserHasTakenTest = test.studentResults?.some(result => 
+  //       result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
+  //   );
+
+  //   if (currentUserHasTakenTest) {
+  //     return {
+  //       status: 'completed',
+  //       color: '#f5f5f5',  // אפור בהיר
+  //       borderColor: '#9e9e9e',  // אפור בינוני
+  //       text: 'כבר נבחנת במבחן זה',
+  //       buttonText: 'צפה בתוצאות',
+  //       buttonColor: 'info'  // כפתור בצבע כחול בהיר
+  //     };
+  //   } else if (isExpired) {
+  //     return {
+  //       status: 'expired',
+  //       color: '#ffebee',
+  //       borderColor: '#f44336',
+  //       text: 'המבחן הסתיים',
+  //       buttonText: 'המבחן הסתיים',
+  //       buttonColor: 'error'
+  //     };
+  //   } else {
+  //     return {
+  //       status: 'available',
+  //       color: 'white',
+  //       borderColor: '#e0e0e0',
+  //       text: 'מבחן זמין',
+  //       buttonText: 'התחל מבחן',
+  //       buttonColor: 'primary'
+  //     };
+  //   }
+  // };
+
+
+
   const getTestStatus = (test, userId) => {
     const now = new Date();
     const endDate = new Date(test.lastDate);
@@ -256,15 +336,16 @@ const ViewTests = () => {
     const currentUserHasTakenTest = test.studentResults?.some(result => 
         result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
     );
-
+  
     if (currentUserHasTakenTest) {
       return {
         status: 'completed',
         color: '#f5f5f5',  // אפור בהיר
         borderColor: '#9e9e9e',  // אפור בינוני
         text: 'כבר נבחנת במבחן זה',
-        buttonText: 'צפה בתוצאות',
-        buttonColor: 'info'  // כפתור בצבע כחול בהיר
+        buttonText: 'מבחן הושלם',
+        buttonColor: 'secondary',
+        disabled: true  // הוסף את זה כדי לבטל את הכפתור
       };
     } else if (isExpired) {
       return {
@@ -273,7 +354,8 @@ const ViewTests = () => {
         borderColor: '#f44336',
         text: 'המבחן הסתיים',
         buttonText: 'המבחן הסתיים',
-        buttonColor: 'error'
+        buttonColor: 'error',
+        disabled: true
       };
     } else {
       return {
@@ -282,10 +364,13 @@ const ViewTests = () => {
         borderColor: '#e0e0e0',
         text: 'מבחן זמין',
         buttonText: 'התחל מבחן',
-        buttonColor: 'primary'
+        buttonColor: 'primary',
+        disabled: false
       };
     }
   };
+
+
 
   const getRemainingTime = (lastDate) => {
     const now = new Date();
@@ -637,7 +722,7 @@ const ViewTests = () => {
                     </Alert>
                   </CardContent>
                   <Divider />
-                  <CardActions sx={{ p: 2, justifyContent: 'center' }}>
+                  {/* <CardActions sx={{ p: 2, justifyContent: 'center' }}>
                     <Button 
                       variant="contained" 
                       fullWidth
@@ -651,7 +736,28 @@ const ViewTests = () => {
                     >
                       {testStatus.buttonText}
                     </Button>
-                  </CardActions>
+                  </CardActions> */}
+
+
+
+<CardActions sx={{ p: 2, justifyContent: 'center' }}>
+  <Button 
+    variant="contained" 
+    fullWidth
+    color={testStatus.buttonColor}
+    disabled={testStatus.disabled} // השתמש בשדה disabled מ-testStatus
+    sx={{ 
+      fontWeight: 'bold',
+      py: 1,
+      height: '42px' 
+    }}
+  >
+    {testStatus.buttonText}
+  </Button>
+</CardActions>
+
+
+
                 </Card>
               </Grid>
             );
