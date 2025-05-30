@@ -135,54 +135,6 @@ const ViewTests = () => {
     fetchTeachers();
   }, [tests]);
 
-  // const handleTestClick = (test) => {
-  //   const token = localStorage.getItem('token');
-  //   if (!token) {
-  //     alert('נא להתחבר מחדש');
-  //     return;
-  //   }
-
-  //   const decoded = jwtDecode(token);
-  //   const userId = decoded.userId;
-  //   const role = decoded.role;
-
-  //   // אם זה מורה, תמיד אפשר לו לגשת למבחן
-  //   if (role === 'teacher') {
-  //     navigate(`/SolveTest/${test._id}`);
-  //     return;
-  //   }
-
-  //   // בדיקה אם התלמידה כבר נבחנה במבחן
-  //   const hasAlreadyTakenTest = test.studentResults?.some(result => 
-  //     result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
-  //   );
-
-  //   if (hasAlreadyTakenTest) {
-  //     // במקום לנווט לדף חדש, נציג את התוצאות בדיאלוג
-  //     const result = test.studentResults.find(r => 
-  //       r.studentId && (r.studentId === userId || r.studentId.toString() === userId)
-  //     );
-      
-  //     if (result) {
-  //       setSelectedResult({
-  //         ...result,
-  //         testDetails: test
-  //       });
-  //       setDialogOpen(true);
-  //     }
-  //     return;
-  //   }
-
-  //   // בדיקת תאריך סיום
-  //   const now = new Date();
-  //   const endDate = new Date(test.lastDate);
-  //   if (now > endDate) {
-  //     alert('המבחן הסתיים');
-  //     return;
-  //   }
-
-  //   navigate(`/SolveTest/${test._id}`);
-  // };
 
   const handleTestClick = (test) => {
     const token = localStorage.getItem('token');

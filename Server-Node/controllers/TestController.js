@@ -286,4 +286,30 @@ function updateTest(req, res) {
         });
 }
 
-module.exports={createTest,getTest,getAllTest,deleteTest,updateTest}
+async function getTestAverageScore(req, res) {
+    const { id } = req.params;
+
+    try {
+        const test = await Test.findById(id);
+        if (!test) {
+            return res.status(404).json({ message: 'מבחן לא נמצא' });
+        }
+
+        const results = test.studentResults;
+
+        if (!results || results.length === 0) {
+            return res.status(200).json({ averageScore: 0 });
+        }
+
+        const total = results.reduce((sum, result) => sum + result.score, 0);
+        const average = total / results.length;
+
+        return res.status(200).json({ averageScore: average });
+    } catch (error) {
+        console.error("שגיאה בחישוב ממוצע:", error);
+        return res.status(500).json({ message: 'שגיאה בשרת' });
+    }
+}
+
+
+module.exports={createTest,getTest,getAllTest,deleteTest,updateTest,getTestAverageScore}

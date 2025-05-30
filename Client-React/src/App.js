@@ -14,6 +14,8 @@ const ViewTestsLazy = React.lazy(() => import("./component/ViewTests"));
 const StudentMenuLazy = React.lazy(() => import("./component/StudentMenu"));
 const TeacherMenuLazy = React.lazy(() => import("./component/TeacherMenu"));
 const ViewRezultTestLazy = React.lazy(() => import("./component/ViewRezultTest"));
+const GraphLazy = React.lazy(() => import("./component/Graph"));
+
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
       <div className="App">
         <Suspense fallback="loading...">
           <Routes>
+          <Route path="/Graph" element={<GraphLazy />} /> 
             <Route path="/" element={<HomeLazy />} />
             <Route path="/Login" element={<LoginLazy />} />
             <Route path="/AppBar" element={<AppBarLazy />} />
