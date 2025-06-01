@@ -160,6 +160,11 @@ const SolveTest = () => {
     setSendingEmail(true);
     setEmailSendError(null);
     const email = localStorage.getItem('email');
+    const token = localStorage.getItem('token');
+
+    console.log("מתחיל שליחת מייל...");
+    console.log("אימייל מהלוקל סטורג':", email);
+    console.log("מזהה מבחן:", testId);
 
     if (!email) {
       setEmailSendError("שגיאה: כתובת מייל לא נמצאה");
@@ -174,15 +179,20 @@ const SolveTest = () => {
     }
 
     try {
-      console.log("מנסה לשלוח מייל עם הנתונים:", { email, testId });
+      console.log("שולח בקשה לשרת עם הנתונים:", { email, testId });
       const res = await axios.post("http://localhost:8080/User/SendMark", { 
         email, 
         testId
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       console.log("תגובה מהשרת:", res.data);
       setEmailSent(true);
     } catch (err) {
-      console.error("פרטי השגיאה:", err.response ? err.response.data : err.message);
+      console.error("פרטי השגיאה המלאים:", err);
+      console.error("תגובת השרת:", err.response?.data);
       setEmailSendError(err.response?.data?.message || "שגיאה בשליחת המייל עם הציון");
     } finally {
       setSendingEmail(false);

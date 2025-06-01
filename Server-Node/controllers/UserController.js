@@ -40,17 +40,17 @@ const SendMark = async (req, res) => {
     const { email, testId } = req.body;
   
     try {
-      console.log(" התחלת שליחת ציון למייל...");
-      console.log(" אימייל שהתקבל:", email);
-      console.log(" מזהה מבחן שהתקבל:", testId);
+      console.log("=== התחלת שליחת ציון למייל ===");
+      console.log("אימייל שהתקבל:", email);
+      console.log("מזהה מבחן שהתקבל:", testId);
   
       const student = await User.findOne({ email });
       if (!student) {
-        console.log(" משתמש לא נמצא");
+        console.log("משתמש לא נמצא במאגר");
         return res.status(404).json({ error: "משתמש לא נמצא" });
       }
   
-      console.log(" נמצא משתמש:", student);
+      console.log("נמצא משתמש:", student.name);
   
       const result = await Result.findOne({
         TestId: testId,
@@ -58,33 +58,37 @@ const SendMark = async (req, res) => {
       });
   
       if (!result) {
-        console.log(" לא נמצאה תוצאה במאגר עבור מבחן זה וסטודנט זה");
+        console.log("לא נמצאה תוצאה במאגר עבור מבחן זה וסטודנט זה");
         return res.status(404).json({ error: "לא נמצאה תוצאה עבור המבחן" });
       }
   
-      console.log(" נמצא תוצאה:", result);
+      console.log("נמצא תוצאה:", result);
   
       const test = await Test.findById(testId).populate("teacherId");
       if (!test) {
-        console.log(" מבחן לא נמצא");
+        console.log("מבחן לא נמצא במאגר");
         return res.status(404).json({ error: "מבחן לא נמצא" });
       }
   
-      console.log(" מבחן נמצא:", test);
+      console.log("מבחן נמצא:", test.title);
   
       const teacher = test.teacherId;
       if (!teacher) {
-        console.log(" מורה לא נמצא");
+        console.log("מורה לא נמצא במאגר");
         return res.status(404).json({ error: "מורה לא נמצא" });
       }
   
-      console.log(" מורה שמצורף למבחן:", teacher);
+      console.log("מורה שמצורף למבחן:", teacher.name);
   
+      console.log("מכין את תצורת המייל...");
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS
+        },
+        tls: {
+          rejectUnauthorized: false
         }
       });
   
@@ -104,14 +108,15 @@ const SendMark = async (req, res) => {
         `
       };
   
-      console.log(" שליחת המייל מתבצעת כעת...");
+      console.log("שולח מייל...");
       await transporter.sendMail(mailOptions);
-      console.log(" מייל נשלח בהצלחה");
+      console.log("מייל נשלח בהצלחה");
   
-      res.status(200).json({ message: "המייל נשלח בהצלחה " });
+      res.status(200).json({ message: "המייל נשלח בהצלחה" });
   
     } catch (error) {
-      console.error(" שגיאה בשליחת מייל:", error);
+      console.error("=== שגיאה בשליחת מייל ===");
+      console.error("פרטי השגיאה:", error);
       res.status(500).json({ error: "שגיאת שרת בעת שליחת המייל: " + error.message });
     }
   };
