@@ -198,7 +198,28 @@ const Graph = () => {
               </Typography>
             </Box>
             
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', maxHeight: '300px', overflowY: 'auto' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: 2, 
+              width: '100%',
+              overflowY: 'auto',
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: '#888',
+                borderRadius: '4px',
+                '&:hover': {
+                  background: '#555',
+                },
+              },
+              pr: 1
+            }}>
               {testResults.length === 0 ? (
                 <Alert severity="info" sx={{ fontSize: '1.1rem', textAlign: 'center' }}>
                   עדיין לא ביצעת מבחנים
@@ -287,7 +308,7 @@ const Graph = () => {
                    {testResults.length > 0 ? Math.round(testResults.reduce((acc, r) => acc + r.score, 0) / testResults.length) : 0}%
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  ממוצע הציונים שלי
+                  ממוצע הציונים שלי בכל המבחנים שנבחנתי
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'center' }}>
