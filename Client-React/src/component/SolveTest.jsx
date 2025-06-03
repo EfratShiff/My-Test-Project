@@ -180,7 +180,7 @@ const SolveTest = () => {
 
     try {
       console.log("שולח בקשה לשרת עם הנתונים:", { email, testId });
-      const res = await axios.post("http://localhost:8080/User/SendMark", { 
+      const res = await axios.post("http://localhost:8080/Email/SendMark", { 
         email, 
         testId
       }, {

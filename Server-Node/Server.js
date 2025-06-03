@@ -8,6 +8,7 @@ const fs = require("fs")
 const UserRouter = require("./routers/UserRouter");
 const TestRouter = require("./routers/TestRouter");
 const ResultTest = require("./routers/ResultTestsRoter")
+const EmailRouter = require("./routers/EmailRouter");
 
 const bodyParser = require("body-parser")
 
@@ -26,7 +27,7 @@ mongoose.connect(connectDb).then(() => {
 app.use("/User", UserRouter);
 app.use("/Test", TestRouter);
 app.use("/Result", ResultTest);
-
+app.use("/Email",EmailRouter)
 app.listen(process.env.APP_PORT, () => {
     console.log("runnn");
 });

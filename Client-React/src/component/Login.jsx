@@ -93,7 +93,7 @@ const Login = () => {
     };
     const sendTempPassword = async (data) => {
         try {
-            await axios.post('http://localhost:8080/User/forgot-password', { email: data.forgotEmail });
+            await axios.post('http://localhost:8080/Email/forgot-password', { email: data.forgotEmail });
             setTempPasswordEmail(data.forgotEmail);
             updateDialog('forgotPassword', false);
             updateDialog('tempPassword', true);
@@ -103,7 +103,7 @@ const Login = () => {
     };
     const verifyTempPassword = async (data) => {
         try {
-            const res = await axios.post('http://localhost:8080/User/verify-temp-password', {
+            const res = await axios.post('http://localhost:8080/Email/verify-temp-password', {
                 email: tempPasswordEmail,
                 tempPassword: data.tempPassword
             });
@@ -127,7 +127,7 @@ const Login = () => {
         }
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:8080/User/change-password', {
+            await axios.post('http://localhost:8080/Email/change-password', {
                 email: tempPasswordEmail,
                 newPassword: newPassword
             }, { headers: { Authorization: `Bearer ${token}` } });
