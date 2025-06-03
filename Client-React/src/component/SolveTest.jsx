@@ -62,7 +62,7 @@ const SolveTest = () => {
   }, [testId]);
   
   useEffect(() => {
-    if (test && currentQuestionIndex < test.questions.length && role !== "teacher") {
+    if (test && currentQuestionIndex < test.questions.length && (role !== "teacher"&& role!=="manager")) {
       const questionTimeLimit = test.questions[currentQuestionIndex].timeLimit;
       setTimer(questionTimeLimit); // Start timer from the time limit
       setSelectedAnswer(null);
@@ -120,8 +120,14 @@ const SolveTest = () => {
   }, [timer, role]); // Depend on timer and role
 
   const continueSolveTest = () => {
-    navigate("/ViewTests");
-  }
+    if(role === "teacher" ) 
+    navigate("/TeacherMenu");
+    else if(role === "manager") 
+      navigate("/ManagerMenu");
+    else 
+    {navigate("/StudentMenu"); 
+    
+  }}
 
   useEffect(() => {
     const sendResults = async () => {
@@ -318,7 +324,7 @@ const SolveTest = () => {
             onClick={continueSolveTest}
             sx={{ mt: 2 }}
           >
-            להמשך פתרון מבחנים
+            חזרה לתפריט
           </Button>
         </Paper>
       </Container>

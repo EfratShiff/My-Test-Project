@@ -1,26 +1,3 @@
-// import { Button } from "@mui/material";
-// import { Link } from "react-router-dom";
-
-// const TeacherMenu = () => {
-//     return(
-//         <>
-//         <Button color="inherit" component={Link} to="/CreateTest" sx={{ fontSize: 18 }}>
-//         ליצירת מבחן
-//           </Button>
-//           <Button color="inherit" component={Link} to="/ViewTests" sx={{ fontSize: 18 }}>
-//          לצפיה במבחנים
-//           </Button>
-//         </>
-//     )
-// }
-//     export default TeacherMenu;
-
-
-
-
-
-
-
 
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -72,15 +49,14 @@ import {
     const navigate = useNavigate();
     const userName = useSelector((state) => state.User.userName);
   
-    // New state for teacher graph functionality
-    const [viewGraph, setViewGraph] = useState(false); // To toggle between menu and graph view
-    const [teacherTests, setTeacherTests] = useState([]); // List of tests created by the teacher
-    const [loadingTests, setLoadingTests] = useState(true); // Loading state for fetching tests
-    const [testsError, setTestsError] = useState(null); // Error state for fetching tests
-    const [selectedTest, setSelectedTest] = useState(null); // The test selected for viewing average
-    const [selectedTestAverage, setSelectedTestAverage] = useState(null); // The average score for the selected test
-    const [loadingAverage, setLoadingAverage] = useState(false); // Loading state for fetching average
-    const [averageError, setAverageError] = useState(null); // Error state for fetching average
+    const [viewGraph, setViewGraph] = useState(false); 
+        const [teacherTests, setTeacherTests] = useState([]);
+    const [loadingTests, setLoadingTests] = useState(true); 
+    const [testsError, setTestsError] = useState(null); 
+    const [selectedTest, setSelectedTest] = useState(null); 
+    const [selectedTestAverage, setSelectedTestAverage] = useState(null); 
+    const [loadingAverage, setLoadingAverage] = useState(false); 
+    const [averageError, setAverageError] = useState(null); 
   
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -107,20 +83,19 @@ import {
         gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         hoverGradient: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)"
       },
-      { // New menu item for Graph
+      { 
         title: "גרף ממוצעי מבחנים",
         description: "צפה בממוצעי הציונים של התלמידים במבחנים שלך",
-        icon: <BarChartIcon sx={{ fontSize: 40 }} />, // Assuming BarChartIcon is imported
+        icon: <BarChartIcon sx={{ fontSize: 40 }} />, 
         onClick: () => {
-          setViewGraph(true); // Switch to graph view
-          fetchTeacherTests(); // Fetch tests when clicking this
+          setViewGraph(true); 
+          fetchTeacherTests(); 
         },
-        gradient: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)", // Example gradient
-        hoverGradient: "linear-gradient(135deg, #ff8a8e 0%, #fdbefb 99%, #fdbefb 100%)" // Example hover gradient
+        gradient: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)", 
+        hoverGradient: "linear-gradient(135deg, #ff8a8e 0%, #fdbefb 99%, #fdbefb 100%)" 
       }
     ];
   
-    // Function to fetch tests created by the current teacher
     const fetchTeacherTests = async () => {
       setLoadingTests(true);
       setTestsError(null);
@@ -135,7 +110,6 @@ import {
           }
         });
 
-        // Filter tests to only include those created by the current teacher
         const teachersTests = response.data.filter(test => test.teacherId === currentTeacherId);
         setTeacherTests(teachersTests);
         console.log("Fetched teacher's tests:", teachersTests);
@@ -147,14 +121,12 @@ import {
       }
     };
 
-    // Function to handle clicking on a test in the list
     const handleTestClick = async (test) => {
       setSelectedTest(test);
       setLoadingAverage(true);
       setAverageError(null);
       try {
         const token = localStorage.getItem('token');
-        // Use the existing endpoint to get the average score for a specific test
         const response = await axios.get(`http://localhost:8080/Test/average/${test._id}`, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -165,22 +137,20 @@ import {
       } catch (err) {
         console.error('Error fetching class average:', err);
         setAverageError('שגיאה בטעינת ממוצע הציונים למבחן זה');
-        setSelectedTestAverage(null); // Clear average on error
+        setSelectedTestAverage(null); 
       } finally {
         setLoadingAverage(false);
       }
     };
 
-    // Function to go back to the list of tests
     const handleBackToList = () => {
       setSelectedTest(null);
       setSelectedTestAverage(null);
-      setAverageError(null); // Clear error
+      setAverageError(null);
     };
   
     return (
       <Container maxWidth="lg" sx={{ py: 6 }}>
-        {/* Header Section */}
         <Fade in timeout={800}>
           <Box textAlign="center" mb={6}>
             <Typography 
@@ -223,9 +193,7 @@ import {
           </Box>
         </Fade>
 
-        {/* Main Content Area - Conditional Rendering */}
         {!viewGraph ? (
-          // --- Display the main menu cards if not viewing graph ---
           <Paper elevation={3} sx={{ p: 4, borderRadius: 2, width: '100%' }}>
             <Grid container spacing={4} justifyContent="center">
               {menuItems.map((item, index) => (
@@ -322,7 +290,6 @@ import {
                       </CardContent>
           
                       <CardActions sx={{ justifyContent: 'center', pb: 4 }}>
-                        {/* Buttons with updated styles - Manual Replacement */}
                         {item.link ? (
                           <Button
                              variant="contained"
@@ -330,8 +297,8 @@ import {
                              component={Link}
                              to={item.link}
                              sx={{
-                                background: item.gradient, // Use item gradient for background
-                                color: 'white', // White text for better contrast
+                                background: item.gradient,
+                                color: 'white', 
                                 border: '2px solid rgba(255,255,255,1)',
                                 borderRadius: 3,
                                 px: 4,
@@ -340,24 +307,24 @@ import {
                                 fontWeight: 800,
                                 boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
                                 transition: 'all 0.3s ease',
-                                '&:hover': { // Ensure this is '&:hover'
-                                  background: item.hoverGradient, // Use item hover gradient
+                                '&:hover': { 
+                                  background: item.hoverGradient,
                                   transform: 'scale(1.08)',
                                   boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
-                                  color: 'white' // Ensure text remains white on hover
+                                  color: 'white' 
                                 }
                               }}
                           >
                              {item.title}
                           </Button>
-                         ) : ( // For items with onClick (like the Graph button)
+                         ) : ( 
                           <Button
                              variant="contained"
                              size="large"
                              onClick={item.onClick}
                              sx={{
-                                background: item.gradient, // Use item gradient for background
-                                color: 'white', // White text for better contrast
+                                background: item.gradient,
+                                color: 'white', 
                                 border: '2px solid rgba(255,255,255,1)',
                                 borderRadius: 3,
                                 px: 4,
@@ -366,11 +333,11 @@ import {
                                 fontWeight: 800,
                                 boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
                                 transition: 'all 0.3s ease',
-                                '&:hover': { // Ensure this is '&:hover'
-                                  background: item.hoverGradient, // Use item hover gradient
+                                '&:hover': { 
+                                  background: item.hoverGradient,
                                   transform: 'scale(1.08)',
                                   boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
-                                  color: 'white' // Ensure text remains white on hover
+                                  color: 'white' 
                                 }
                               }}
                            >
@@ -385,9 +352,7 @@ import {
             </Grid>
           </Paper>
         ) : (
-          // --- Display the graph and test list if viewing graph ---
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
-              {/* עמודה שמאלית: גרף */}
               <Box sx={{ flex: 1 }}>
                 <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, justifyContent: 'center', width: '100%' }}>
@@ -398,7 +363,6 @@ import {
                       {selectedTest ? `ממוצע ציונים במבחן "${selectedTest.title}"` : 'גרף ממוצעי מבחנים'}
                     </Typography>
                   </Box>
-
                   {selectedTest ? (
                     <Box sx={{ mb: 4, width: '100%' }}>
                       {loadingAverage ? (
@@ -411,14 +375,14 @@ import {
                          <Box sx={{ height: 300, width: '100%' }}>
                            <ResponsiveContainer width="100%" height="100%">
                              <BarChart
-                               data={[{ name: 'ממוצע כיתתי', score: Math.round(selectedTestAverage) }] } // Data for average
+                               data={[{ name: 'ממוצע כיתתי', score: Math.round(selectedTestAverage) }] }
                                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                              >
                                <CartesianGrid strokeDasharray="3 3" />
                                <XAxis dataKey="name" />
                                <YAxis domain={[0, 100]} />
                                <Tooltip />
-                               <Bar dataKey="score" fill={theme.palette.success.main} radius={[6, 6, 0, 0]} /> {/* Green for average */}
+                               <Bar dataKey="score" fill={theme.palette.success.main} radius={[6, 6, 0, 0]} />
                              </BarChart>
                            </ResponsiveContainer>
                          </Box>
@@ -451,12 +415,11 @@ import {
                 </Box>
               </Box>
 
-              {/* עמודה ימנית: רשימת מבחנים של המורה */}
               <Box sx={{ flex: 1 }}>
                  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, justifyContent: 'center', width: '100%' }}>
                      <Box sx={{ width: 40, height: 40, bgcolor: theme.palette.secondary.main, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Typography variant="h6" sx={{ color: 'white' }}>📝</Typography> {/* Changed icon for list */}
+                        <Typography variant="h6" sx={{ color: 'white' }}>📝</Typography> 
                      </Box>
                       <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: theme.palette.secondary.main, textAlign: 'center' }}>
                        המבחנים שיצרתי
@@ -469,7 +432,7 @@ import {
                       gap: 2,
                       width: '100%',
                       overflowY: 'auto',
-                      maxHeight: '400px', // Set a max height for the list, adjust as needed
+                      maxHeight: '400px', 
                       '&::-webkit-scrollbar': {
                         width: '8px',
                       },
@@ -509,7 +472,7 @@ import {
                                transform: 'translateY(-2px)',
                                boxShadow: '0 8px 30px rgba(0,0,0,0.12)'
                              },
-                             cursor: 'pointer' // Indicate clickable
+                             cursor: 'pointer' 
                            }}
                            onClick={() => handleTestClick(test)}
                          >
@@ -517,7 +480,6 @@ import {
                              <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary, textAlign: 'center' }}>
                                {test.title}
                              </Typography>
-                             {/* You can add more test details here if needed */}
                            </CardContent>
                          </Card>
                        ))
@@ -527,8 +489,6 @@ import {
               </Box>
             </Box>
         )}
-
-        {/* Floating Action Buttons */}
         <Box
           sx={{
             position: 'fixed',
@@ -577,8 +537,6 @@ import {
             </Paper>
           </Fade>
         </Box>
-
-        {/* Background Animations */}
         <Box
           sx={{
             position: 'fixed',
@@ -637,5 +595,4 @@ import {
       </Container>
     );
   };
-  
   export default TeacherMenu;
