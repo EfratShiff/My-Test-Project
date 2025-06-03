@@ -96,16 +96,25 @@ const SendMark = async (req, res) => {
         from: process.env.EMAIL_USER,
         to: student.email,
         subject: `הציון שלך במבחן "${test.title}"`,
-        text: `
-  שלום ${student.name},
-  
-  המבחן "${test.title}" נבדק.
-  
-  שם המורה: ${teacher.name}
-  הציון שלך: ${result.Mark}/100
-  
-  בהצלחה! 
-        `
+        html: `
+        <div style="direction: rtl; font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+          <h2 style="color: #2c3e50;">שלום ${student.name},</h2>
+          <p>המבחן <strong>"${test.title}"</strong> נבדק בהצלחה.</p>
+          
+          <table style="margin-top: 15px; border-collapse: collapse; width: 100%;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ccc;"><strong>שם המורה:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ccc;">${teacher.name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ccc;"><strong>הציון שלך:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ccc;"><strong style="color: green;">${result.Mark}/100</strong></td>
+            </tr>
+          </table>
+    
+          <p style="margin-top: 20px;">בהצלחה בהמשך! 🎓</p>
+        </div>
+      `
       };
   
       console.log("שולח מייל...");
@@ -149,7 +158,19 @@ try {
         from: process.env.EMAIL_USER,
         to: email,
         subject: "איפוס סיסמה",
-        text: `הסיסמה הזמנית שלך היא: ${tempPassword}`, 
+        html: `
+    <div style="direction: rtl; font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
+      <h2 style="color: #333;">שלום,</h2>
+      <p>קיבלת סיסמה זמנית לצורך התחברות מחדש למערכת.</p>
+      
+      <div style="margin: 20px 0; padding: 15px; background-color: #e9f7ef; border: 1px solid #2ecc71; border-radius: 5px; text-align: center;">
+        <strong style="font-size: 20px; color: #27ae60;">${tempPassword}</strong>
+      </div>
+
+      <p>מומלץ להיכנס עם הסיסמה הזו ולבחור סיסמה חדשה בהקדם האפשרי.</p>
+      <p style="margin-top: 20px;">בברכה,<br>צוות התמיכה</p>
+    </div>
+  `
     });
     
 
