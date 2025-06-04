@@ -3,24 +3,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import {
-  Box, Typography, Card, CardContent, CardHeader, CardActions,
-  Button,
-  Grid,
-  Container,
-  Chip,
-  CircularProgress,
-  Alert,
-  Divider,
-  Paper,
-  TextField,
-  IconButton,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  MenuItem
-} from "@mui/material";
+  Box, Typography, Card, CardContent, CardHeader, CardActions,Button,Grid,Container,Chip,
+  CircularProgress,Alert,Divider,Paper,TextField,IconButton,Dialog,DialogActions,
+  DialogContent,DialogContentText,DialogTitle,MenuItem} from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -37,7 +22,6 @@ import EventIcon from "@mui/icons-material/Event";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import CloseIcon from "@mui/icons-material/Close";
 import { Stack, Fade } from "@mui/material";
-
 const ViewTests = () => {
   const navigate = useNavigate();
   const [tests, setTests] = useState([]);
@@ -48,17 +32,11 @@ const ViewTests = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedTest, setEditedTest] = useState(null);
   const [newQuestion, setNewQuestion] = useState({
-    questionText: '',
-    options: ['', '', '', ''],
-    correctAnswer: '',
-    timeLimit: 0
-  });
+  questionText: '',options: ['', '', '', ''], correctAnswer: '',timeLimit: 0});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [testToDelete, setTestToDelete] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
-
-  // פונקציות עזר להזיז לראש הקומפוננטה
   const isTeacher = () => {
     const token = localStorage.getItem("token");
     if (!token) return false;
@@ -70,7 +48,6 @@ const ViewTests = () => {
       return false;
     }
   };
-
   const getCurrentTeacherId = () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
@@ -82,7 +59,6 @@ const ViewTests = () => {
       return null;
     }
   };
-
   useEffect(() => {
     const fetchTests = async () => {
       try {
@@ -94,8 +70,6 @@ const ViewTests = () => {
         console.log("Test data:", response.data);
         setTests(response.data);
         setError(null);
-
-        // אם המשתמש הוא מורה, הגדר אותו כמורה נבחר בברירת מחדל
         if (isTeacher()) {
           const currentTeacherId = getCurrentTeacherId();
           if (currentTeacherId) {
@@ -109,7 +83,6 @@ const ViewTests = () => {
         setLoading(false);
       }
     };
-
     fetchTests();
   }, []);
 
@@ -118,7 +91,6 @@ const ViewTests = () => {
       if (tests.length > 0) {
         const ids = [...new Set(tests.map(test => test.teacherId))];
         const names = {};
-
         for (const id of ids) {
           if (!id) continue;
           try {
@@ -134,119 +106,44 @@ const ViewTests = () => {
     };
     fetchTeachers();
   }, [tests]);
-
-
   const handleTestClick = (test) => {
     const token = localStorage.getItem('token');
     if (!token) {
       alert('נא להתחבר מחדש');
       return;
     }
-
     const decoded = jwtDecode(token);
     const userId = decoded.userId;
     const role = decoded.role;
-
-    // אם זה מורה, תמיד אפשר לו לגשת למבחן
     if (role === 'teacher' || role === 'manager') {
       navigate(`/SolveTest/${test._id}`);
       return;
     }
-
-    // בדיקה אם התלמידה כבר נבחנה במבחן
     const hasAlreadyTakenTest = test.studentResults?.some(result =>
       result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
     );
-
     if (hasAlreadyTakenTest) {
-      // מנע גישה למבחן שכבר בוצע - פשוט לא תעשה כלום
       return;
     }
-
-    // בדיקת תאריך סיום
     const now = new Date();
     const endDate = new Date(test.lastDate);
     if (now > endDate) {
-      alert('המבחן הסתיים');
       return;
     }
-
     navigate(`/SolveTest/${test._id}`);
   };
-
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setSelectedResult(null);
   };
-
-  const renderScoreBadge = (score) => {
-    const scoreValue = Math.round(score ?? 0);
-    let color = "primary";
-
-    if (scoreValue >= 90) color = "success";
-    else if (scoreValue >= 70) color = "info";
-    else if (scoreValue >= 55) color = "warning";
-    else color = "error";
-
-    return (
-      <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-        <CircularProgress
-          variant="determinate"
-          value={scoreValue}
-          size={60}
-          thickness={5}
-          color={color}
-        />
-        <Box
-          sx={{
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            position: 'absolute',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Typography
-            variant="caption"
-            component="div"
-            color="text.secondary"
-            fontSize={16}
-            fontWeight="bold"
-          >
-            {scoreValue}
-          </Typography>
-        </Box>
-      </Box>
-    );
-  };
-
-  const getAchievementIcon = (score) => {
-    const scoreValue = Math.round(score ?? 0);
-
-    if (scoreValue >= 95) {
-      return <CheckCircleIcon sx={{ color: 'gold', fontSize: 28 }} />;
-    } else if (scoreValue >= 85) {
-      return <CheckCircleIcon sx={{ color: 'silver', fontSize: 24 }} />;
-    } else if (scoreValue >= 70) {
-      return <CheckCircleIcon sx={{ color: '#CD7F32', fontSize: 22 }} />;
-    } else {
-      return <CancelIcon color="action" fontSize="small" />;
-    }
-  };
-
   const getTestStatus = (test, userId) => {
     const now = new Date();
     const endDate = new Date(test.lastDate);
     const isExpired = now > endDate;
-
     // בדיקה אם המשתמש הנוכחי כבר נבחן במבחן
     const currentUserHasTakenTest = test.studentResults?.some(result =>
       result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
     );
-
     if (currentUserHasTakenTest) {
       return {
         status: 'completed',
@@ -280,7 +177,6 @@ const ViewTests = () => {
       };
     }
   };
-
   const getRemainingTime = (lastDate) => {
     const now = new Date();
     const deadline = new Date(lastDate);
@@ -295,7 +191,6 @@ const ViewTests = () => {
       return `${hours} שעות ו-${minutes} דקות`;
     }
   };
-
   const getCardStyle = (isExpired) => {
     return {
       height: '100%',
@@ -310,12 +205,10 @@ const ViewTests = () => {
       backgroundColor: isExpired ? '#fff8f8' : '#ffffff'
     };
   };
-
   const canEditTest = (test) => {
     const currentTeacherId = getCurrentTeacherId();
     return isTeacher() && currentTeacherId === test.teacherId;
   };
-
   const handleEditTest = (test) => {
     if (!canEditTest(test)) {
       alert("אין לך הרשאה לערוך מבחן זה");
@@ -324,11 +217,9 @@ const ViewTests = () => {
     setEditedTest({ ...test });
     setEditDialogOpen(true);
   };
-
   const handleSaveTest = async () => {
     try {
       const response = await axios.put(`http://localhost:8080/Test/updateTest/${editedTest._id}`, editedTest);
-
       if (response.data) {
         setTests(prevTests => prevTests.map(test =>
           test._id === editedTest._id ? response.data : test
@@ -342,7 +233,6 @@ const ViewTests = () => {
       alert(`שגיאה בעדכון המבחן: ${error.response?.data?.message || error.message}`);
     }
   };
-
   const handleAddQuestion = () => {
     setEditedTest(prev => ({
       ...prev,
@@ -355,14 +245,12 @@ const ViewTests = () => {
       timeLimit: 0
     });
   };
-
   const handleRemoveQuestion = (index) => {
     setEditedTest(prev => ({
       ...prev,
       questions: prev.questions.filter((_, i) => i !== index)
     }));
   };
-
   const handleQuestionChange = (index, field, value) => {
     setEditedTest(prev => ({
       ...prev,
@@ -371,7 +259,6 @@ const ViewTests = () => {
       )
     }));
   };
-
   const handleOptionChange = (questionIndex, optionIndex, value) => {
     setEditedTest(prev => ({
       ...prev,
@@ -383,7 +270,6 @@ const ViewTests = () => {
       )
     }));
   };
-
   const getUniqueTeachers = () => {
     const uniqueTeacherIds = [...new Set(tests.map(test => test.teacherId))];
     return uniqueTeacherIds.map(id => ({
@@ -391,12 +277,10 @@ const ViewTests = () => {
       name: teachersNames[id] || "טעינה..."
     })).filter(teacher => teacher.id);
   };
-
   const getFilteredTests = () => {
     if (!selectedTeacher) return tests;
     return tests.filter(test => test.teacherId === selectedTeacher);
   };
-
   const handleDeleteClick = (test, e) => {
     e.stopPropagation();
     if (!canEditTest(test)) {
@@ -406,7 +290,6 @@ const ViewTests = () => {
     setTestToDelete(test);
     setDeleteDialogOpen(true);
   };
-
   const handleDeleteConfirm = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -414,18 +297,14 @@ const ViewTests = () => {
         alert("לא נמצא טוקן, התחבר שוב");
         return;
       }
-
       console.log("מנסה למחוק מבחן עם מזהה:", testToDelete._id);
       console.log("טוקן:", token);
-
       const response = await axios.delete(`http://localhost:8080/Test/deleteTest/${testToDelete._id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
       console.log("תגובה מהשרת:", response.data);
-
       if (response.data) {
         setTests(prevTests => prevTests.filter(test => test._id !== testToDelete._id));
         setDeleteDialogOpen(false);
@@ -442,7 +321,6 @@ const ViewTests = () => {
       alert(`שגיאה במחיקת המבחן: ${error.response?.data?.message || error.message}`);
     }
   };
-
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh" flexDirection="column">
@@ -451,7 +329,6 @@ const ViewTests = () => {
       </Box>
     );
   }
-
   if (error) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
@@ -461,11 +338,9 @@ const ViewTests = () => {
       </Container>
     );
   }
-
   const uniqueTeachers = getUniqueTeachers();
   const filteredTests = getFilteredTests();
   const currentTeacherId = getCurrentTeacherId();
-
   return (
     <Container maxWidth="lg" dir="rtl" sx={{ mt: 4, mb: 8 }}>
       <Box textAlign="center" mb={6}>
@@ -500,7 +375,6 @@ const ViewTests = () => {
             onClick={() => setSelectedTeacher(teacher.id)}
             sx={{
               mb: 2,
-              // הדגשה מיוחדת למורה הנוכחי
               ...(teacher.id === currentTeacherId && selectedTeacher === teacher.id && {
                 boxShadow: '0 4px 8px rgba(25, 118, 210, 0.3)',
                 border: '2px solid',
@@ -631,7 +505,6 @@ const ViewTests = () => {
                     </Alert>
                   </CardContent>
                   <Divider />
-
                   <CardActions sx={{ p: 2, justifyContent: 'center' }}>
                     <Button
                       variant="contained"
@@ -653,7 +526,6 @@ const ViewTests = () => {
           })}
         </Grid>
       )}
-
       <Dialog
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
@@ -671,7 +543,6 @@ const ViewTests = () => {
                 onChange={(e) => setEditedTest(prev => ({ ...prev, title: e.target.value }))}
                 sx={{ mb: 2 }}
               />
-
               <TextField
                 fullWidth
                 label="תאריך אחרון להגשה"
@@ -681,9 +552,7 @@ const ViewTests = () => {
                 sx={{ mb: 2 }}
                 InputLabelProps={{ shrink: true }}
               />
-
               <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>שאלות</Typography>
-
               {editedTest.questions.map((question, index) => (
                 <Paper key={index} sx={{ p: 2, mb: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -692,7 +561,6 @@ const ViewTests = () => {
                       <DeleteIcon />
                     </IconButton>
                   </Box>
-
                   <TextField
                     fullWidth
                     label="טקסט השאלה"
@@ -700,7 +568,6 @@ const ViewTests = () => {
                     onChange={(e) => handleQuestionChange(index, 'questionText', e.target.value)}
                     sx={{ mb: 2 }}
                   />
-
                   {question.options.map((option, optionIndex) => (
                     <TextField
                       key={optionIndex}
@@ -711,7 +578,6 @@ const ViewTests = () => {
                       sx={{ mb: 1 }}
                     />
                   ))}
-
                   <TextField
                     select
                     fullWidth
@@ -726,7 +592,6 @@ const ViewTests = () => {
                       </MenuItem>
                     ))}
                   </TextField>
-
                   <TextField
                     fullWidth
                     type="number"
@@ -736,7 +601,6 @@ const ViewTests = () => {
                   />
                 </Paper>
               ))}
-
               <Button
                 variant="outlined"
                 onClick={handleAddQuestion}
@@ -755,7 +619,6 @@ const ViewTests = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -764,7 +627,7 @@ const ViewTests = () => {
         <DialogContent>
           <DialogContentText>
             האם אתה בטוח שברצונך למחוק את המבחן "{testToDelete?.title}"?
-            פעולה זו אינה ניתנת לביטול.
+            פעולה זו אינה ניתנת לביטול
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -774,7 +637,6 @@ const ViewTests = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       <Dialog
         open={dialogOpen}
         onClose={handleCloseDialog}
@@ -793,121 +655,8 @@ const ViewTests = () => {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-
-        <DialogContent>
-          {selectedResult && (
-            <>
-              <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} md={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <EventIcon sx={{ color: 'text.secondary', mr: 1 }} />
-                      <Typography variant="body1">
-                        תאריך הגשה: {selectedResult.submitDate?.substring(0, 10) || "לא זמין"}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <FormatListNumberedIcon sx={{ color: 'text.secondary', mr: 1 }} />
-                      <Typography variant="body1">
-                        מספר שאלות: {selectedResult.testDetails?.questions?.length || 0}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} md={6} sx={{ textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                      {getAchievementIcon(selectedResult.Mark)}
-                      {renderScoreBadge(selectedResult.Mark)}
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Paper>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-                <MenuBookIcon sx={{ mr: 1 }} />
-                שאלות ותשובות
-              </Typography>
-              <Stack spacing={2}>
-                {selectedResult.testDetails?.questions?.map((q, qIndex) => {
-                  const studentAnswer = selectedResult.answers?.find(
-                    (a) => a.questionId === q._id
-                  );
-                  const isCorrect = studentAnswer &&
-                    q.options[studentAnswer.selectedOptionIndex] === q.correctAnswer;
-                  const borderColor = isCorrect ? 'success.main' : 'error.main';
-                  const bgColor = isCorrect ? 'rgba(76, 175, 80, 0.04)' : 'rgba(244, 67, 54, 0.04)';
-                  return (
-                    <Fade in={true} key={q._id || qIndex} timeout={500} style={{ transitionDelay: `${qIndex * 100}ms` }}>
-                      <Paper
-                        variant="outlined"
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          borderRight: 4,
-                          borderColor: borderColor,
-                          bgcolor: bgColor
-                        }}
-                      >
-                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                          שאלה {qIndex + 1}: {q.questionText}
-                        </Typography>
-                        <Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5 }}>
-                          אפשרויות:
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
-                          {q.options?.map((opt, i) => {
-                            const isCorrectAnswer = opt === q.correctAnswer;
-                            const isSelected = studentAnswer?.selectedOptionIndex === i;
-                            return (
-                              <Chip
-                                key={i}
-                                label={opt}
-                                variant={isSelected ? "filled" : "outlined"}
-                                color={
-                                  isSelected
-                                    ? (isCorrectAnswer ? "success" : "error")
-                                    : (isCorrectAnswer ? "success" : "default")
-                                }
-                                size="medium"
-                                icon={
-                                  isSelected && isCorrectAnswer
-                                    ? <CheckCircleIcon />
-                                    : (isSelected ? <CancelIcon /> : undefined)
-                                }
-                              />
-                            );
-                          })}
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            תשובת סטודנט:
-                          </Typography>
-                          <Typography variant="body2" sx={{ ml: 1 }}>
-                            {studentAnswer
-                              ? q.options[studentAnswer.selectedOptionIndex]
-                              : "לא ענה"}
-                          </Typography>
-                          {isCorrect ? (
-                            <CheckCircleIcon color="success" fontSize="small" sx={{ ml: 1 }} />
-                          ) : (
-                            <CancelIcon color="error" fontSize="small" sx={{ ml: 1 }} />
-                          )}
-                        </Box>
-                      </Paper>
-                    </Fade>
-                  );
-                })}
-              </Stack>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary" variant="contained">
-            סגור
-          </Button>
-        </DialogActions>
       </Dialog>
     </Container>
   );
 };
-
 export default ViewTests;

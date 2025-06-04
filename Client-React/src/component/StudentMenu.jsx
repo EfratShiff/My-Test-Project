@@ -1,36 +1,20 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { 
-    Box, 
-    Button, 
-    Container, 
-    Typography, 
-    Paper, 
-    Grid, 
-    Card, 
-    CardContent, 
-    CardActions,
-    Fade,
-    useTheme,
-    alpha
-  } from "@mui/material";
+import { Box,Button,Container,Typography,Paper, Grid, Card, CardContent, CardActions,
+    Fade,useTheme,alpha} from "@mui/material";
   import { Link, useNavigate } from "react-router-dom";
-  import { 
-    Quiz as QuizIcon, 
-    Assessment as AssessmentIcon,
-    BarChart as BarChartIcon
+  import { Quiz as QuizIcon, Assessment as AssessmentIcon,BarChart as BarChartIcon
   } from "@mui/icons-material";
-  import axios from "axios";
-  
+
   const StudentMenu = () => {
     const theme = useTheme();
     const navigate = useNavigate();
     const userName = useSelector((state) => state.User.userName);
-  
+
     const menuItems = [
       {
         title: "פתרון מבחן",
-        description: "התחל מבחן חדש וצבור נקודות",
+        description: "התחל מבחן חדש",
         icon: <QuizIcon sx={{ fontSize: 40 }} />,
         link: "/ViewTests",
         gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -53,29 +37,6 @@ import {
         hoverGradient: "linear-gradient(135deg, #3d8bfe 0%, #00d4fe 100%)"
       }
     ];
-  
-    const handleTestClick = async (test) => {
-        try {
-            // בדיקה אם התלמיד כבר נבחן במבחן זה
-            const response = await axios.get(`http://localhost:8080/Result/check-test/${test._id}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-
-            if (response.data.hasTakenTest) {
-                alert("כבר נבחנת על מבחן זה!");
-                return;
-            }
-
-            // אם לא נבחן, ממשיך לפתיחת המבחן
-            navigate(`/Test/${test._id}`);
-        } catch (error) {
-            console.error("Error checking test status:", error);
-            alert("שגיאה בבדיקת סטטוס המבחן");
-        }
-    };
-  
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
@@ -83,10 +44,8 @@ import {
         localStorage.removeItem('name');
         navigate('/login');
     };
-  
     return (
       <Container maxWidth="lg" sx={{ py: 6 }}>
-        {/* Header Section */}
         <Fade in timeout={800}>
           <Box textAlign="center" mb={6}>
             <Typography 
@@ -102,7 +61,7 @@ import {
                 fontSize: { xs: '2.5rem', md: '3.5rem' }
               }}
             >
-              שלום לתלמיד {userName}
+              שלום לתלמיד/ה {userName}
             </Typography>
             <Typography 
               variant="h5" 
@@ -116,7 +75,6 @@ import {
             >
               ברוך הבא למערכת המבחנים
             </Typography>
-            {/* Added Box for buttons to apply flex properties */}
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
                <Button
                  variant="outlined"
@@ -129,8 +87,6 @@ import {
             </Box>
           </Box>
         </Fade>
-  
-        {/* Menu Cards */}
         <Grid container spacing={4} justifyContent="center">
           {menuItems.map((item, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
@@ -198,7 +154,6 @@ import {
                     >
                       {item.icon}
                     </Box>
-                    
                     <Typography 
                       variant="h4" 
                       component="h2" 
@@ -211,8 +166,7 @@ import {
                       }}
                     >
                       {item.title}
-                    </Typography>
-                    
+                    </Typography>  
                     <Typography 
                       variant="body1" 
                       sx={{ 
@@ -226,7 +180,6 @@ import {
                       {item.description}
                     </Typography>
                   </CardContent>
-  
                   <CardActions sx={{ justifyContent: 'center', pb: 4 }}>
                     <Button
                       variant="contained"
@@ -258,9 +211,7 @@ import {
             </Grid>
           ))}
         </Grid>
-  
-        {/* Floating Action Buttons */}
-        <Box
+          <Box
           sx={{
             position: 'fixed',
             bottom: 30,
@@ -308,8 +259,6 @@ import {
             </Paper>
           </Fade>
         </Box>
-  
-        {/* Background Animations */}
         <Box
           sx={{
             position: 'fixed',
@@ -368,5 +317,4 @@ import {
       </Container>
     );
   };
-  
   export default StudentMenu;
