@@ -1,3 +1,5 @@
+
+
 import { useNavigate, useParams } from "react-router-dom";
 import { use, useEffect, useState } from "react";
 import axios from "axios";
@@ -24,7 +26,9 @@ import {
   QuestionMark,
   CheckCircle,
   Assessment,
-  Email
+  Email,
+  NavigateBefore,
+  NavigateNext
 } from "@mui/icons-material";
 
 const SolveTest = () => {
@@ -39,13 +43,11 @@ const SolveTest = () => {
   const role = localStorage.getItem("role");
   const navigate = useNavigate();
 
-  // New state for email functionality
   const [showEmailButton, setShowEmailButton] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSendError, setEmailSendError] = useState(null);
-  const [receivedScore, setReceivedScore] = useState(null); // To store score for potential email
-
+  const [receivedScore, setReceivedScore] = useState(null); 
   useEffect(() => {
     const fetchTest = async () => {
       try {
@@ -64,16 +66,16 @@ const SolveTest = () => {
   useEffect(() => {
     if (test && currentQuestionIndex < test.questions.length && (role !== "teacher"&& role!=="manager")) {
       const questionTimeLimit = test.questions[currentQuestionIndex].timeLimit;
-      setTimer(questionTimeLimit); // Start timer from the time limit
+      setTimer(questionTimeLimit); 
       setSelectedAnswer(null);
 
       const id = setInterval(() => {
         setTimer((prev) => {
-          if (prev - 1 <= 0) { // Check if time is zero or less
+          if (prev - 1 <= 0) { 
             clearInterval(id);
             handleTimeUp();
           }
-          return prev - 1; // Decrement timer
+          return prev - 1; 
         });
       }, 1000);
 
@@ -81,22 +83,18 @@ const SolveTest = () => {
 
       return () => {
         clearInterval(id);
-        setIntervalId(null); // Clear intervalId state on cleanup
+        setIntervalId(null); 
       };
     }
-     // Clear interval if component unmounts or test/role changes significantly before quiz ends
     return () => {
         if (intervalId) {
             clearInterval(intervalId);
             setIntervalId(null);
         }
     };
-  }, [test, currentQuestionIndex, role]); // Added role to dependencies
-
-  // Effect to handle timer reaching 10 seconds for beep and color change
+  }, [test, currentQuestionIndex, role]); 
   useEffect(() => {
-    if (role !== "teacher" && timer > 0 && timer <= 10) {
-        // Play a short beep sound
+    if (role !== "teacher" && role !== "manager" && timer > 0 && timer <= 10) {
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
@@ -105,19 +103,23 @@ const SolveTest = () => {
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
 
-            oscillator.type = 'sine'; // Sine wave for a simple beep
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
-            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Volume
+            oscillator.type = 'sine'; 
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); 
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
 
             oscillator.start();
-            // Stop the sound after a short duration
-            oscillator.stop(audioContext.currentTime + 0.1); // Beep for 100ms
+            oscillator.stop(audioContext.currentTime + 0.1); 
         } catch (error) {
             console.error("Error playing sound:", error);
-            // Handle cases where audio context is not available or allowed
         }
     }
   }, [timer, role]); // Depend on timer and role
+
+  useEffect(() => {
+    if (role === "teacher" || role === "manager") {
+      setSelectedAnswer(null);
+    }
+  }, [currentQuestionIndex, role]);
 
   const continueSolveTest = () => {
     if(role === "teacher" ) 
@@ -155,11 +157,11 @@ const SolveTest = () => {
       }
     };
 
-    // Trigger sendResults when all questions are answered and results haven\'t been sent yet
-    if (test && currentQuestionIndex >= test.questions.length && userAnswers.length === test.questions.length && receivedScore === null && !scoreError) {
+    // Trigger sendResults when all questions are answered and results haven't been sent yet
+    if (test && currentQuestionIndex >= test.questions.length && userAnswers.length === test.questions.length && receivedScore === null && !scoreError && role !== "teacher" && role !== "manager") {
       sendResults();
     }
-  }, [currentQuestionIndex, test, userAnswers.length, testId, receivedScore, scoreError]); // Added userAnswers.length to dependencies
+  }, [currentQuestionIndex, test, userAnswers.length, testId, receivedScore, scoreError, role]); // Added role to dependencies
 
   // New function to handle sending email
   const handleSendEmailClick = async () => {
@@ -234,7 +236,7 @@ const SolveTest = () => {
     }
     
     // רק עבור תלמידים, מורים לא צריכים לעבור אוטומטית
-    if (role !== "teacher") {
+    if (role !== "teacher" && role !== "manager") {
        // Add a small delay before moving to the next question to allow visual feedback of selection
        setTimeout(() => {
          goToNextQuestion();
@@ -244,11 +246,36 @@ const SolveTest = () => {
 
   const handleAnswerClick = (index) => {
     setSelectedAnswer(index);
-    recordAnswer(index); // Call recordAnswer here to save answer and potentially move to next question
+    // For students, record the answer automatically
+    if (role !== "teacher" && role !== "manager") {
+      recordAnswer(index); // Call recordAnswer here to save answer and potentially move to next question
+    }
   };
 
   const goToNextQuestion = () => {
     setCurrentQuestionIndex((prev) => prev + 1);
+  };
+
+  const goToPreviousQuestion = () => {
+    setCurrentQuestionIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  // Navigation functions for teachers and managers
+  const handleNavigateNext = () => {
+    if (currentQuestionIndex < test.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const handleNavigatePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+
+  const handleFinishTest = () => {
+    // For teachers and managers, just navigate back to their menu
+    continueSolveTest();
   };
 
   if (!test) {
@@ -264,8 +291,8 @@ const SolveTest = () => {
     );
   }
 
-  // End of test display
-  if (currentQuestionIndex >= test.questions.length) {
+  // End of test display - only for students
+  if (currentQuestionIndex >= test.questions.length && role !== "teacher" && role !== "manager") {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
@@ -354,7 +381,7 @@ const SolveTest = () => {
               variant="outlined"
             />
             
-            {role !== "teacher" && test.questions[currentQuestionIndex].timeLimit > 0 && ( // Only show timer chip if time limit > 0
+            {role !== "teacher" && role !== "manager" && test.questions[currentQuestionIndex].timeLimit > 0 && ( // Only show timer chip if time limit > 0
               <Chip
                 icon={<Timer />}
                 label={`${timer} שניות נותרו`} // Show remaining time
@@ -362,10 +389,19 @@ const SolveTest = () => {
                 variant="filled"
               />
             )}
-             {role !== "teacher" && test.questions[currentQuestionIndex].timeLimit === 0 && ( // Show "No time limit" if time limit is 0
+             {role !== "teacher" && role !== "manager" && test.questions[currentQuestionIndex].timeLimit === 0 && ( // Show "No time limit" if time limit is 0
               <Chip
                 icon={<Timer />}
                 label={`ללא הגבלת זמן`}
+                color="info"
+                variant="filled"
+              />
+            )}
+            
+            {/* Show review mode indicator for teachers and managers */}
+            {(role === "teacher" || role === "manager") && (
+              <Chip
+                label="מצב צפייה"
                 color="info"
                 variant="filled"
               />
@@ -384,7 +420,7 @@ const SolveTest = () => {
             />
           </Box>
 
-          {role !== "teacher" && test.questions[currentQuestionIndex].timeLimit > 0 && (
+          {role !== "teacher" && role !== "manager" && test.questions[currentQuestionIndex].timeLimit > 0 && (
             <Box>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 זמן נותר התקדמות
@@ -421,7 +457,7 @@ const SolveTest = () => {
                     <Radio
                       checked={selectedAnswer === i}
                       onChange={() => handleAnswerClick(i)}
-                      disabled={selectedAnswer !== null && role !== "teacher"} // Disable after selecting answer for student
+                      disabled={selectedAnswer !== null && role !== "teacher" && role !== "manager"} // Disable after selecting answer for student
                       sx={{
                         '&.Mui-checked': {
                           color: 'primary.main',
@@ -452,6 +488,42 @@ const SolveTest = () => {
             </RadioGroup>
           </CardContent>
         </Card>
+
+        {(role === "teacher" || role === "manager") && (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
+            <Button
+              variant="outlined"
+              startIcon={<NavigateBefore />}
+              onClick={handleNavigatePrevious}
+              disabled={currentQuestionIndex === 0}
+              size="large"
+            >
+              שאלה קודמת
+            </Button>
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleFinishTest}
+                size="large"
+              >
+                סיום צפייה
+              </Button>
+              
+              {currentQuestionIndex < test.questions.length - 1 && (
+                <Button
+                  variant="outlined"
+                  endIcon={<NavigateNext />}
+                  onClick={handleNavigateNext}
+                  size="large"
+                >
+                  שאלה הבאה
+                </Button>
+              )}
+            </Box>
+          </Box>
+        )}
       </Paper>
     </Container>
   );

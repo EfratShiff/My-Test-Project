@@ -70,7 +70,7 @@ import {
       {
         title: "יצירת מבחן",
         description: "בנה מבחן חדש עם שאלות מותאמות",
-        icon: <CreateIcon sx={{ fontSize: 40 }} />,
+        icon: <CreateIcon sx={{ fontSize: 40, color:'red' }} />,
         link: "/CreateTest",
         gradient: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
         hoverGradient: "linear-gradient(135deg, #0e877c 0%, #32d46b 100%)"
@@ -194,10 +194,10 @@ import {
         </Fade>
 
         {!viewGraph ? (
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 2, width: '100%' }}>
+          <Paper elevation={3} sx={{ p: 4, borderRadius: 2, width: '100%'}}>
             <Grid container spacing={4} justifyContent="center">
               {menuItems.map((item, index) => (
-                <Grid item xs={12} sm={6} md={5} key={index}>
+                <Grid item xs={12} sm={6} md={5} key={index} >
                   <Fade in timeout={1000 + index * 200}>
                     <Card
                       component={item.link ? Link : 'div'}
