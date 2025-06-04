@@ -2,14 +2,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { 
-  Box,  Typography,   Card,  CardContent,  CardHeader,CardActions,   
-  Button, 
-  Grid, 
-  Container, 
-  Chip, 
-  CircularProgress, 
-  Alert, 
+import {
+  Box, Typography, Card, CardContent, CardHeader, CardActions,
+  Button,
+  Grid,
+  Container,
+  Chip,
+  CircularProgress,
+  Alert,
   Divider,
   Paper,
   TextField,
@@ -94,7 +94,7 @@ const ViewTests = () => {
         console.log("Test data:", response.data);
         setTests(response.data);
         setError(null);
-        
+
         // אם המשתמש הוא מורה, הגדר אותו כמורה נבחר בברירת מחדל
         if (isTeacher()) {
           const currentTeacherId = getCurrentTeacherId();
@@ -142,27 +142,27 @@ const ViewTests = () => {
       alert('נא להתחבר מחדש');
       return;
     }
-  
+
     const decoded = jwtDecode(token);
     const userId = decoded.userId;
     const role = decoded.role;
-  
+
     // אם זה מורה, תמיד אפשר לו לגשת למבחן
-    if (role === 'teacher') {
+    if (role === 'teacher' || role === 'manager') {
       navigate(`/SolveTest/${test._id}`);
       return;
     }
-  
+
     // בדיקה אם התלמידה כבר נבחנה במבחן
-    const hasAlreadyTakenTest = test.studentResults?.some(result => 
+    const hasAlreadyTakenTest = test.studentResults?.some(result =>
       result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
     );
-  
+
     if (hasAlreadyTakenTest) {
       // מנע גישה למבחן שכבר בוצע - פשוט לא תעשה כלום
       return;
     }
-  
+
     // בדיקת תאריך סיום
     const now = new Date();
     const endDate = new Date(test.lastDate);
@@ -170,7 +170,7 @@ const ViewTests = () => {
       alert('המבחן הסתיים');
       return;
     }
-  
+
     navigate(`/SolveTest/${test._id}`);
   };
 
@@ -182,7 +182,7 @@ const ViewTests = () => {
   const renderScoreBadge = (score) => {
     const scoreValue = Math.round(score ?? 0);
     let color = "primary";
-    
+
     if (scoreValue >= 90) color = "success";
     else if (scoreValue >= 70) color = "info";
     else if (scoreValue >= 55) color = "warning";
@@ -190,12 +190,12 @@ const ViewTests = () => {
 
     return (
       <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-        <CircularProgress 
-          variant="determinate" 
-          value={scoreValue} 
-          size={60} 
-          thickness={5} 
-          color={color} 
+        <CircularProgress
+          variant="determinate"
+          value={scoreValue}
+          size={60}
+          thickness={5}
+          color={color}
         />
         <Box
           sx={{
@@ -225,7 +225,7 @@ const ViewTests = () => {
 
   const getAchievementIcon = (score) => {
     const scoreValue = Math.round(score ?? 0);
-    
+
     if (scoreValue >= 95) {
       return <CheckCircleIcon sx={{ color: 'gold', fontSize: 28 }} />;
     } else if (scoreValue >= 85) {
@@ -237,69 +237,28 @@ const ViewTests = () => {
     }
   };
 
-  // const getTestStatus = (test, userId) => {
-  //   const now = new Date();
-  //   const endDate = new Date(test.lastDate);
-  //   const isExpired = now > endDate;
-    
-  //   // בדיקה אם המשתמש הנוכחי כבר נבחן במבחן
-  //   const currentUserHasTakenTest = test.studentResults?.some(result => 
-  //       result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
-  //   );
-
-  //   if (currentUserHasTakenTest) {
-  //     return {
-  //       status: 'completed',
-  //       color: '#f5f5f5',  // אפור בהיר
-  //       borderColor: '#9e9e9e',  // אפור בינוני
-  //       text: 'כבר נבחנת במבחן זה',
-  //       buttonText: 'צפה בתוצאות',
-  //       buttonColor: 'info'  // כפתור בצבע כחול בהיר
-  //     };
-  //   } else if (isExpired) {
-  //     return {
-  //       status: 'expired',
-  //       color: '#ffebee',
-  //       borderColor: '#f44336',
-  //       text: 'המבחן הסתיים',
-  //       buttonText: 'המבחן הסתיים',
-  //       buttonColor: 'error'
-  //     };
-  //   } else {
-  //     return {
-  //       status: 'available',
-  //       color: 'white',
-  //       borderColor: '#e0e0e0',
-  //       text: 'מבחן זמין',
-  //       buttonText: 'התחל מבחן',
-  //       buttonColor: 'primary'
-  //     };
-  //   }
-  // };
-
-
-
   const getTestStatus = (test, userId) => {
     const now = new Date();
     const endDate = new Date(test.lastDate);
     const isExpired = now > endDate;
-    
+
     // בדיקה אם המשתמש הנוכחי כבר נבחן במבחן
-    const currentUserHasTakenTest = test.studentResults?.some(result => 
-        result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
+    const currentUserHasTakenTest = test.studentResults?.some(result =>
+      result.studentId && (result.studentId === userId || result.studentId.toString() === userId)
     );
-  
+
     if (currentUserHasTakenTest) {
       return {
         status: 'completed',
-        color: '#f5f5f5',  // אפור בהיר
-        borderColor: '#9e9e9e',  // אפור בינוני
+        color: '#f5f5f5',
+        borderColor: '#9e9e9e',
         text: 'כבר נבחנת במבחן זה',
         buttonText: 'מבחן הושלם',
         buttonColor: 'secondary',
-        disabled: true  // הוסף את זה כדי לבטל את הכפתור
+        disabled: true
       };
-    } else if (isExpired) {
+    }
+    else if (isExpired) {
       return {
         status: 'expired',
         color: '#ffebee',
@@ -321,8 +280,6 @@ const ViewTests = () => {
       };
     }
   };
-
-
 
   const getRemainingTime = (lastDate) => {
     const now = new Date();
@@ -364,16 +321,16 @@ const ViewTests = () => {
       alert("אין לך הרשאה לערוך מבחן זה");
       return;
     }
-    setEditedTest({...test});
+    setEditedTest({ ...test });
     setEditDialogOpen(true);
   };
 
   const handleSaveTest = async () => {
     try {
       const response = await axios.put(`http://localhost:8080/Test/updateTest/${editedTest._id}`, editedTest);
-      
+
       if (response.data) {
-        setTests(prevTests => prevTests.map(test => 
+        setTests(prevTests => prevTests.map(test =>
           test._id === editedTest._id ? response.data : test
         ));
         setEditDialogOpen(false);
@@ -389,7 +346,7 @@ const ViewTests = () => {
   const handleAddQuestion = () => {
     setEditedTest(prev => ({
       ...prev,
-      questions: [...prev.questions, {...newQuestion}]
+      questions: [...prev.questions, { ...newQuestion }]
     }));
     setNewQuestion({
       questionText: '',
@@ -409,8 +366,8 @@ const ViewTests = () => {
   const handleQuestionChange = (index, field, value) => {
     setEditedTest(prev => ({
       ...prev,
-      questions: prev.questions.map((q, i) => 
-        i === index ? {...q, [field]: value} : q
+      questions: prev.questions.map((q, i) =>
+        i === index ? { ...q, [field]: value } : q
       )
     }));
   };
@@ -418,7 +375,7 @@ const ViewTests = () => {
   const handleOptionChange = (questionIndex, optionIndex, value) => {
     setEditedTest(prev => ({
       ...prev,
-      questions: prev.questions.map((q, i) => 
+      questions: prev.questions.map((q, i) =>
         i === questionIndex ? {
           ...q,
           options: q.options.map((opt, j) => j === optionIndex ? value : opt)
@@ -466,9 +423,9 @@ const ViewTests = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       console.log("תגובה מהשרת:", response.data);
-      
+
       if (response.data) {
         setTests(prevTests => prevTests.filter(test => test._id !== testToDelete._id));
         setDeleteDialogOpen(false);
@@ -515,10 +472,10 @@ const ViewTests = () => {
         <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
           מבחנים זמינים
         </Typography>
-        <Divider variant="middle" sx={{ 
-          width: '80px', 
-          mx: 'auto', 
-          borderBottomWidth: 3, 
+        <Divider variant="middle" sx={{
+          width: '80px',
+          mx: 'auto',
+          borderBottomWidth: 3,
           borderColor: 'primary.main',
           mb: 2
         }} />
@@ -541,7 +498,7 @@ const ViewTests = () => {
             variant={selectedTeacher === teacher.id ? "contained" : "outlined"}
             color="primary"
             onClick={() => setSelectedTeacher(teacher.id)}
-            sx={{ 
+            sx={{
               mb: 2,
               // הדגשה מיוחדת למורה הנוכחי
               ...(teacher.id === currentTeacherId && selectedTeacher === teacher.id && {
@@ -557,10 +514,10 @@ const ViewTests = () => {
         ))}
       </Box>
       {filteredTests.length === 0 ? (
-        <Paper 
-          elevation={2} 
-          sx={{ 
-            p: 5, 
+        <Paper
+          elevation={2}
+          sx={{
+            p: 5,
             textAlign: 'center',
             borderRadius: 2,
             backgroundColor: '#f5f5f5'
@@ -585,18 +542,18 @@ const ViewTests = () => {
             const userIsTeacher = isTeacher();
             const isMiddleCard = index === Math.floor(filteredTests.length / 2);
             return (
-              <Grid 
-                item 
-                xs={12} 
-                sm={isMiddleCard ? 8 : 6} 
-                md={isMiddleCard ? 6 : 4} 
+              <Grid
+                item
+                xs={12}
+                sm={isMiddleCard ? 8 : 6}
+                md={isMiddleCard ? 6 : 4}
                 key={index}
                 sx={{
                   display: 'flex',
                   justifyContent: 'center'
                 }}
               >
-                <Card 
+                <Card
                   sx={{
                     ...getCardStyle(isExpired),
                     width: isMiddleCard ? '100%' : '100%',
@@ -605,7 +562,7 @@ const ViewTests = () => {
                     bgcolor: testStatus.color,
                     border: `2px solid ${testStatus.borderColor}`,
                     position: 'relative'
-                  }} 
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleTestClick(test);
@@ -619,9 +576,9 @@ const ViewTests = () => {
                         </Typography>
                         {canEditTest(test) && (
                           <Box>
-                            <IconButton 
-                              size="small" 
-                              color="primary" 
+                            <IconButton
+                              size="small"
+                              color="primary"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleEditTest(test);
@@ -630,9 +587,9 @@ const ViewTests = () => {
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                            <IconButton 
-                              size="small" 
-                              color="error" 
+                            <IconButton
+                              size="small"
+                              color="error"
                               onClick={(e) => handleDeleteClick(test, e)}
                             >
                               <DeleteIcon fontSize="small" />
@@ -642,7 +599,7 @@ const ViewTests = () => {
                       </Box>
                     }
                     action={
-                      <Chip 
+                      <Chip
                         icon={isExpired ? <WarningIcon /> : <AccessTimeIcon />}
                         label={isExpired ? "מבחן סגור" : remainingTime}
                         color={isExpired ? "error" : "success"}
@@ -665,51 +622,31 @@ const ViewTests = () => {
                         מועד אחרון: {lastDate.toLocaleString('he-IL')}
                       </Typography>
                     </Box>
-                    <Alert 
-                      severity={testStatus.status === 'completed' ? 'success' : 
-                              testStatus.status === 'expired' ? 'error' : 'info'}
+                    <Alert
+                      severity={testStatus.status === 'completed' ? 'success' :
+                        testStatus.status === 'expired' ? 'error' : 'info'}
                       sx={{ mt: 2 }}
                     >
                       {testStatus.text}
                     </Alert>
                   </CardContent>
                   <Divider />
-                  {/* <CardActions sx={{ p: 2, justifyContent: 'center' }}>
-                    <Button 
-                      variant="contained" 
+
+                  <CardActions sx={{ p: 2, justifyContent: 'center' }}>
+                    <Button
+                      variant="contained"
                       fullWidth
                       color={testStatus.buttonColor}
-                      disabled={testStatus.status === 'expired'}
-                      sx={{ 
+                      disabled={testStatus.disabled}
+                      sx={{
                         fontWeight: 'bold',
                         py: 1,
-                        height: '42px' 
+                        height: '42px'
                       }}
                     >
                       {testStatus.buttonText}
                     </Button>
-                  </CardActions> */}
-
-
-
-<CardActions sx={{ p: 2, justifyContent: 'center' }}>
-  <Button 
-    variant="contained" 
-    fullWidth
-    color={testStatus.buttonColor}
-    disabled={testStatus.disabled} // השתמש בשדה disabled מ-testStatus
-    sx={{ 
-      fontWeight: 'bold',
-      py: 1,
-      height: '42px' 
-    }}
-  >
-    {testStatus.buttonText}
-  </Button>
-</CardActions>
-
-
-
+                  </CardActions>
                 </Card>
               </Grid>
             );
@@ -717,8 +654,8 @@ const ViewTests = () => {
         </Grid>
       )}
 
-      <Dialog 
-        open={editDialogOpen} 
+      <Dialog
+        open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
         maxWidth="md"
         fullWidth
@@ -731,22 +668,22 @@ const ViewTests = () => {
                 fullWidth
                 label="כותרת המבחן"
                 value={editedTest.title}
-                onChange={(e) => setEditedTest(prev => ({...prev, title: e.target.value}))}
+                onChange={(e) => setEditedTest(prev => ({ ...prev, title: e.target.value }))}
                 sx={{ mb: 2 }}
               />
-              
+
               <TextField
                 fullWidth
                 label="תאריך אחרון להגשה"
                 type="datetime-local"
                 value={new Date(editedTest.lastDate).toISOString().slice(0, 16)}
-                onChange={(e) => setEditedTest(prev => ({...prev, lastDate: new Date(e.target.value)}))}
+                onChange={(e) => setEditedTest(prev => ({ ...prev, lastDate: new Date(e.target.value) }))}
                 sx={{ mb: 2 }}
                 InputLabelProps={{ shrink: true }}
               />
 
               <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>שאלות</Typography>
-              
+
               {editedTest.questions.map((question, index) => (
                 <Paper key={index} sx={{ p: 2, mb: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -755,7 +692,7 @@ const ViewTests = () => {
                       <DeleteIcon />
                     </IconButton>
                   </Box>
-                  
+
                   <TextField
                     fullWidth
                     label="טקסט השאלה"
@@ -838,8 +775,8 @@ const ViewTests = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog 
-        open={dialogOpen} 
+      <Dialog
+        open={dialogOpen}
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
@@ -856,7 +793,7 @@ const ViewTests = () => {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        
+
         <DialogContent>
           {selectedResult && (
             <>
@@ -894,18 +831,18 @@ const ViewTests = () => {
                   const studentAnswer = selectedResult.answers?.find(
                     (a) => a.questionId === q._id
                   );
-                  const isCorrect = studentAnswer && 
+                  const isCorrect = studentAnswer &&
                     q.options[studentAnswer.selectedOptionIndex] === q.correctAnswer;
                   const borderColor = isCorrect ? 'success.main' : 'error.main';
                   const bgColor = isCorrect ? 'rgba(76, 175, 80, 0.04)' : 'rgba(244, 67, 54, 0.04)';
                   return (
                     <Fade in={true} key={q._id || qIndex} timeout={500} style={{ transitionDelay: `${qIndex * 100}ms` }}>
-                      <Paper 
+                      <Paper
                         variant="outlined"
-                        sx={{ 
+                        sx={{
                           p: 2,
                           borderRadius: 2,
-                          borderRight: 4, 
+                          borderRight: 4,
                           borderColor: borderColor,
                           bgcolor: bgColor
                         }}
@@ -926,14 +863,14 @@ const ViewTests = () => {
                                 label={opt}
                                 variant={isSelected ? "filled" : "outlined"}
                                 color={
-                                  isSelected 
-                                    ? (isCorrectAnswer ? "success" : "error") 
+                                  isSelected
+                                    ? (isCorrectAnswer ? "success" : "error")
                                     : (isCorrectAnswer ? "success" : "default")
                                 }
                                 size="medium"
                                 icon={
-                                  isSelected && isCorrectAnswer 
-                                    ? <CheckCircleIcon /> 
+                                  isSelected && isCorrectAnswer
+                                    ? <CheckCircleIcon />
                                     : (isSelected ? <CancelIcon /> : undefined)
                                 }
                               />
