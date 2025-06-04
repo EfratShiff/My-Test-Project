@@ -24,7 +24,7 @@ const Home = () => {
       direction: Math.random() > 0.5 ? 1 : -1,
       color: Math.random() > 0.5 ? '#ffffff' : '#3b82f6',
       pattern: pattern, 
-      angle: pattern === 2 ? (Math.random() * 60 + 15) * (Math.random() > 0.5 ? 1 : -1) : 0 // זווית לתנועה אלכסונית
+      angle: pattern === 2 ? (Math.random() * 60 + 15) * (Math.random() > 0.5 ? 1 : -1) : 0 
     };
   };
   

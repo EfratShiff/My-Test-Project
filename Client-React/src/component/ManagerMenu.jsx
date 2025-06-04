@@ -1,35 +1,10 @@
 
 import React, { useState } from "react";
-import {
-  Button,
-  Typography,
-  Container,
-  Paper,
-  Grid,
-  TextField,
-  Box,
-  Card,
-  CardContent,
-  Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  AppBar,
-  Toolbar,
-  IconButton,
-  CircularProgress
-} from "@mui/material";
-import {
-  Person as PersonIcon,
-  School as SchoolIcon,
-  Delete as DeleteIcon,
-  Add as AddIcon,
-  Assessment as AssessmentIcon,
-  People as PeopleIcon,
-  ArrowBack as ArrowBackIcon
+import {Button,Typography,Container,Paper,Grid,TextField,Box,Card,CardContent,Divider,
+  Table,TableBody,TableCell,TableContainer,TableHead,TableRow,AppBar,Toolbar,IconButton,
+  CircularProgress} from "@mui/material";
+import {Person as PersonIcon,School as SchoolIcon,Delete as DeleteIcon,Add as AddIcon,
+  Assessment as AssessmentIcon,People as PeopleIcon,ArrowBack as ArrowBackIcon
 } from "@mui/icons-material";
 import axios from "axios";
 import { useForm } from "react-hook-form";
@@ -40,16 +15,15 @@ const ManagerMenu = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showUsers, setShowUsers] = useState(false);
-
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors }
   } = useForm();
-
   const fetchAllUsers = async () => {
-    try {debugger
+    try {
+      debugger
       setLoading(true);
       const token = localStorage.getItem("token");
       const response = await axios.get('http://localhost:8080/User/getAllUser', {
@@ -67,56 +41,47 @@ const ManagerMenu = () => {
       setLoading(false);
     }
   };
-
   const onSubmit = async (data) => {
     const token = localStorage.getItem("token");
     try {
       if (actionType.startsWith("add")) {
         const role = actionType === "add-teacher" ? "teacher" : "student";
         data.role = role;
-        
         if (!data.name || !data.email || !data.password) {
           throw new Error("כל השדות הם שדות חובה");
         }
-
         if (data.password.length < 6) {
           throw new Error("הסיסמה חייבת להכיל לפחות 6 תווים");
         }
-
         if (!data.email.includes('@')) {
           throw new Error("כתובת אימייל לא תקינה");
         }
-        
         await axios.post('http://localhost:8080/User/createUser', data, {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
-        
         alert(`המשתמש בתפקיד ${role} נוסף בהצלחה`);
-        fetchAllUsers(); 
+        fetchAllUsers();
       }
       else if (actionType === "delete-user") {
         if (!data.email || !data.password) {
           throw new Error("יש להזין אימייל וסיסמה כדי למחוק משתמש");
         }
-        
         await axios.delete("http://localhost:8080/User/deleteUser", {
-  data: {
-    email: data.email,
-    password: data.password
-  }
-});
-
+          data: {
+            email: data.email,
+            password: data.password
+          }
+        });
         alert(`המשתמש נמחק בהצלחה`);
-        fetchAllUsers(); 
+        fetchAllUsers();
       }
       reset();
       setActionType("");
     } catch (err) {
       console.error("Error details:", err);
-      
       if (err.response) {
         alert("שגיאה: " + (err.response.data.message || err.response.data.error || "שגיאה כללית"));
       } else if (err.request) {
@@ -126,7 +91,6 @@ const ManagerMenu = () => {
       }
     }
   };
-
   const getValidationOptions = (field) => {
     if (actionType.startsWith("add")) {
       switch (field) {
@@ -153,7 +117,7 @@ const ManagerMenu = () => {
         default:
           return {};
       }
-    } 
+    }
     else {
       return {
         required: "שדה חובה"
@@ -161,7 +125,6 @@ const ManagerMenu = () => {
     }
   };
   const showForm = !!actionType;
-
   return (
     <Box sx={{ flexGrow: 1, direction: "rtl" }}>
       <AppBar position="static" color="primary" sx={{ mb: 4 }}>
@@ -174,7 +137,6 @@ const ManagerMenu = () => {
           </Typography>
         </Toolbar>
       </AppBar>
-
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
@@ -223,7 +185,6 @@ const ManagerMenu = () => {
                 </Grid>
               </Grid>
             </Paper>
-
             <Paper elevation={3} sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
                 צפייה במידע
@@ -257,18 +218,16 @@ const ManagerMenu = () => {
               </Grid>
             </Paper>
           </Grid>
-
           <Grid item xs={12} md={6}>
             {showForm && (
               <Card elevation={3}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom align="center">
                     {actionType.includes("add") ? "הוספת" : "מחיקת"}{" "}
-                    {actionType === "add-teacher" ? "מורה" : 
-                     actionType === "add-student" ? "תלמידה" : "משתמש"}
+                    {actionType === "add-teacher" ? "מורה" :
+                      actionType === "add-student" ? "תלמידה" : "משתמש"}
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
-
                   <form onSubmit={handleSubmit(onSubmit)}>
                     <Grid container spacing={3}>
                       {actionType.includes("add") && (
@@ -283,19 +242,17 @@ const ManagerMenu = () => {
                           />
                         </Grid>
                       )}
-                      
                       <Grid item xs={12}>
                         <TextField
                           fullWidth
                           label="אימייל"
                           variant="outlined"
-                          type="text" 
-                              {...register("email", getValidationOptions("email"))}
+                          type="text"
+                          {...register("email", getValidationOptions("email"))}
                           error={!!errors.email}
                           helperText={errors.email?.message}
                         />
                       </Grid>
-                      
                       <Grid item xs={12}>
                         <TextField
                           fullWidth
@@ -307,7 +264,6 @@ const ManagerMenu = () => {
                           helperText={errors.password?.message}
                         />
                       </Grid>
-
                       <Grid item xs={12} sx={{ mt: 2 }}>
                         <Button
                           type="submit"
@@ -336,13 +292,11 @@ const ManagerMenu = () => {
                 </CardContent>
               </Card>
             )}
-
             {loading && (
               <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
                 <CircularProgress />
               </Box>
             )}
-
             {showUsers && !loading && (
               <Paper sx={{ mt: showForm ? 4 : 0, p: 2 }}>
                 <Typography variant="h6" gutterBottom>

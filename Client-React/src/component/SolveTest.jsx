@@ -1,35 +1,10 @@
-
-
 import { useNavigate, useParams } from "react-router-dom";
 import { use, useEffect, useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Button,
-  LinearProgress,
-  Paper,
-  Container,
-  Alert,
-  Chip,
-  Divider,
-  CircularProgress
-} from "@mui/material";
-import {
-  Timer,
-  QuestionMark,
-  CheckCircle,
-  Assessment,
-  Email,
-  NavigateBefore,
-  NavigateNext
-} from "@mui/icons-material";
+import {Box,Typography,Card,CardContent,RadioGroup,FormControlLabel,Radio,Button,
+  LinearProgress,Paper,Container,Alert,Chip,Divider,CircularProgress} from "@mui/material";
+import { Timer, QuestionMark, CheckCircle, Email,  NavigateBefore, NavigateNext} from "@mui/icons-material";
 
 const SolveTest = () => {
   const { testId } = useParams();
@@ -42,7 +17,6 @@ const SolveTest = () => {
   const [scoreError, setScoreError] = useState(null);
   const role = localStorage.getItem("role");
   const navigate = useNavigate();
-
   const [showEmailButton, setShowEmailButton] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
@@ -59,16 +33,13 @@ const SolveTest = () => {
         console.error(" שגיאה בטעינת מבחן:", err);
       }
     };
-
     fetchTest();
   }, [testId]);
-  
   useEffect(() => {
     if (test && currentQuestionIndex < test.questions.length && (role !== "teacher"&& role!=="manager")) {
       const questionTimeLimit = test.questions[currentQuestionIndex].timeLimit;
       setTimer(questionTimeLimit); 
       setSelectedAnswer(null);
-
       const id = setInterval(() => {
         setTimer((prev) => {
           if (prev - 1 <= 0) { 
@@ -78,9 +49,7 @@ const SolveTest = () => {
           return prev - 1; 
         });
       }, 1000);
-
       setIntervalId(id);
-
       return () => {
         clearInterval(id);
         setIntervalId(null); 
@@ -99,28 +68,23 @@ const SolveTest = () => {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-
             oscillator.type = 'sine'; 
             oscillator.frequency.setValueAtTime(440, audioContext.currentTime); 
             gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-
             oscillator.start();
             oscillator.stop(audioContext.currentTime + 0.1); 
         } catch (error) {
             console.error("Error playing sound:", error);
         }
     }
-  }, [timer, role]); // Depend on timer and role
-
+  }, [timer, role]); 
   useEffect(() => {
     if (role === "teacher" || role === "manager") {
       setSelectedAnswer(null);
     }
   }, [currentQuestionIndex, role]);
-
   const continueSolveTest = () => {
     if(role === "teacher" ) 
     navigate("/TeacherMenu");
@@ -128,64 +92,49 @@ const SolveTest = () => {
       navigate("/ManagerMenu");
     else 
     {navigate("/StudentMenu"); 
-    
   }}
-
   useEffect(() => {
     const sendResults = async () => {
       try {
         const token = localStorage.getItem("token");
         const decoded = jwtDecode(token);
-
         const body = {
           TestId: testId,
           studentId: decoded.userId,
           answers: userAnswers,
         };
-
         console.log("נשלח לשרת:", body);
-
         const response = await axios.post("http://localhost:8080/Result/createResultTest", body);
-        // Do not display score immediately
-        setReceivedScore(response.data.Mark); // Store score for email
+        setReceivedScore(response.data.Mark); 
         console.log("תוצאות נשמרו בהצלחה");
-        setShowEmailButton(true); // Show the email button
-
+        setShowEmailButton(true); 
       } catch (error) {
         console.error("שגיאה בשליחת התוצאות:", error);
         setScoreError("שליחת התוצאה נכשלה ");
       }
     };
-
-    // Trigger sendResults when all questions are answered and results haven't been sent yet
     if (test && currentQuestionIndex >= test.questions.length && userAnswers.length === test.questions.length && receivedScore === null && !scoreError && role !== "teacher" && role !== "manager") {
       sendResults();
     }
   }, [currentQuestionIndex, test, userAnswers.length, testId, receivedScore, scoreError, role]); // Added role to dependencies
-
-  // New function to handle sending email
   const handleSendEmailClick = async () => {
     setSendingEmail(true);
     setEmailSendError(null);
     const email = localStorage.getItem('email');
     const token = localStorage.getItem('token');
-
     console.log("מתחיל שליחת מייל...");
     console.log("אימייל מהלוקל סטורג':", email);
     console.log("מזהה מבחן:", testId);
-
     if (!email) {
       setEmailSendError("שגיאה: כתובת מייל לא נמצאה");
       setSendingEmail(false);
       return;
     }
-
     if (receivedScore === null) {
         setEmailSendError("שגיאה: הציון לא זמין עדיין.");
         setSendingEmail(false);
         return;
     }
-
     try {
       console.log("שולח בקשה לשרת עם הנתונים:", { email, testId });
       const res = await axios.post("http://localhost:8080/Email/SendMark", { 
@@ -206,14 +155,10 @@ const SolveTest = () => {
       setSendingEmail(false);
     }
   };
-
-  // פונקציה חדשה לטיפול בפקיעת זמן
   const handleTimeUp = () => {
     console.log("הזמן נגמר - רושם -1 כתשובה");
     recordAnswer(-1);
   };
-
-  // פונקציה לרישום תשובה (משותפת לבחירה ופקיעת זמן)
   const recordAnswer = (answerIndex) => {
     setUserAnswers((prev) => {
       const newAnswers = [...prev];
@@ -228,56 +173,38 @@ const SolveTest = () => {
       });
       return newAnswers;
     });
-
-    // נקה את הטיימר אם הוא עדיין פועל
     if (intervalId) {
       clearInterval(intervalId);
-      setIntervalId(null); // Clear intervalId state
+      setIntervalId(null); 
     }
-    
-    // רק עבור תלמידים, מורים לא צריכים לעבור אוטומטית
     if (role !== "teacher" && role !== "manager") {
-       // Add a small delay before moving to the next question to allow visual feedback of selection
        setTimeout(() => {
          goToNextQuestion();
-       }, 500); // 500ms delay
+       }, 500); 
     }
   };
-
   const handleAnswerClick = (index) => {
     setSelectedAnswer(index);
-    // For students, record the answer automatically
     if (role !== "teacher" && role !== "manager") {
-      recordAnswer(index); // Call recordAnswer here to save answer and potentially move to next question
-    }
+      recordAnswer(index); 
+       }
   };
-
   const goToNextQuestion = () => {
     setCurrentQuestionIndex((prev) => prev + 1);
   };
-
-  const goToPreviousQuestion = () => {
-    setCurrentQuestionIndex((prev) => Math.max(0, prev - 1));
-  };
-
-  // Navigation functions for teachers and managers
   const handleNavigateNext = () => {
     if (currentQuestionIndex < test.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
-
   const handleNavigatePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
-
   const handleFinishTest = () => {
-    // For teachers and managers, just navigate back to their menu
     continueSolveTest();
   };
-
   if (!test) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, textAlign: 'center' }}>
@@ -290,8 +217,6 @@ const SolveTest = () => {
       </Container>
     );
   }
-
-  // End of test display - only for students
   if (currentQuestionIndex >= test.questions.length && role !== "teacher" && role !== "manager") {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
@@ -300,8 +225,6 @@ const SolveTest = () => {
           <Typography variant="h4" gutterBottom color="primary">
             המבחן הסתיים!
           </Typography>
-          
-          {/* Display message based on score submission status */}
           {scoreError ? (
             <Alert severity="error" sx={{ mb: 3 }}>
               {scoreError}
@@ -313,8 +236,6 @@ const SolveTest = () => {
               </Typography>
              </Box>
           )}
-
-          {/* Email sending section */}
           {!scoreError && showEmailButton && (
             <Box sx={{ mt: 3, mb: 3 }}>
                 {emailSendError && (
@@ -344,7 +265,6 @@ const SolveTest = () => {
                  )}
             </Box>
           )}
-          
           <Button 
             variant="contained" 
             size="large" 
@@ -357,22 +277,18 @@ const SolveTest = () => {
       </Container>
     );
   }
-
   const currentQuestion = test.questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / test.questions.length) * 100;
   const timeProgress = test.questions[currentQuestionIndex].timeLimit > 0 
     ? (timer / test.questions[currentQuestionIndex].timeLimit) * 100 
     : 0;
-
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 3 }}>
-        {/* Header */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h4" gutterBottom color="primary" textAlign="center">
             {test.title}
           </Typography>
-          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Chip
               icon={<QuestionMark />}
@@ -380,7 +296,6 @@ const SolveTest = () => {
               color="primary"
               variant="outlined"
             />
-            
             {role !== "teacher" && role !== "manager" && test.questions[currentQuestionIndex].timeLimit > 0 && ( // Only show timer chip if time limit > 0
               <Chip
                 icon={<Timer />}
@@ -397,8 +312,6 @@ const SolveTest = () => {
                 variant="filled"
               />
             )}
-            
-            {/* Show review mode indicator for teachers and managers */}
             {(role === "teacher" || role === "manager") && (
               <Chip
                 label="מצב צפייה"
@@ -407,8 +320,6 @@ const SolveTest = () => {
               />
             )}
           </Box>
-
-          {/* Progress bars */}
           <Box sx={{ mb: 2 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               התקדמות במבחן
@@ -419,7 +330,6 @@ const SolveTest = () => {
               sx={{ height: 8, borderRadius: 4 }}
             />
           </Box>
-
           {role !== "teacher" && role !== "manager" && test.questions[currentQuestionIndex].timeLimit > 0 && (
             <Box>
               <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -434,17 +344,12 @@ const SolveTest = () => {
             </Box>
           )}
         </Box>
-
         <Divider sx={{ mb: 3 }} />
-
-        {/* Question Card */}
         <Card elevation={2} sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
               {currentQuestion.questionText}
             </Typography>
-
-            {/* Disable radio buttons if answer is selected (for student role) */}
             <RadioGroup
               value={selectedAnswer !== null ? selectedAnswer : ''}
               name={`q-${currentQuestionIndex}`}
@@ -488,7 +393,6 @@ const SolveTest = () => {
             </RadioGroup>
           </CardContent>
         </Card>
-
         {(role === "teacher" || role === "manager") && (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
             <Button
@@ -500,7 +404,6 @@ const SolveTest = () => {
             >
               שאלה קודמת
             </Button>
-
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button
                 variant="contained"
@@ -510,7 +413,6 @@ const SolveTest = () => {
               >
                 סיום צפייה
               </Button>
-              
               {currentQuestionIndex < test.questions.length - 1 && (
                 <Button
                   variant="outlined"
@@ -528,5 +430,4 @@ const SolveTest = () => {
     </Container>
   );
 };
-
 export default SolveTest;
