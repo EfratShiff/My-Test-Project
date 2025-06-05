@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useDispatch } from "react-redux";
+import { logout } from "../store/UserSlice";
 import {
   Box, Typography, Card, CardContent, CardHeader, CardActions,Button,Grid,Container,Chip,
   CircularProgress,Alert,Divider,Paper,TextField,IconButton,Dialog,DialogActions,
@@ -24,6 +26,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { Stack, Fade } from "@mui/material";
 const ViewTests = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [tests, setTests] = useState([]);
   const [teachersNames, setTeachersNames] = useState({});
   const [loading, setLoading] = useState(true);
@@ -321,6 +324,10 @@ const ViewTests = () => {
       alert(`שגיאה במחיקת המבחן: ${error.response?.data?.message || error.message}`);
     }
   };
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh" flexDirection="column">
@@ -343,6 +350,30 @@ const ViewTests = () => {
   const currentTeacherId = getCurrentTeacherId();
   return (
     <Container maxWidth="lg" dir="rtl" sx={{ mt: 4, mb: 8 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, pl: 6 }}>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleLogout}
+          sx={{
+            fontWeight: 600,
+            fontSize: '1rem',
+            py: 1.5,
+            px: 4,
+            borderRadius: '8px',
+            textTransform: 'none',
+            letterSpacing: '0.5px',
+            background: 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)',
+            boxShadow: '0 3px 5px 2px rgba(244, 67, 54, .3)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)',
+              boxShadow: '0 4px 8px 3px rgba(244, 67, 54, .4)'
+            }
+          }}
+        >
+          LogOut
+        </Button>
+      </Box>
       <Box textAlign="center" mb={6}>
         <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
           מבחנים זמינים

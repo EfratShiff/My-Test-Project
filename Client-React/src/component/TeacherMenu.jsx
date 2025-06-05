@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -70,31 +69,35 @@ import {
       {
         title: "יצירת מבחן",
         description: "בנה מבחן חדש עם שאלות מותאמות",
-        icon: <CreateIcon sx={{ fontSize: 40, color:'red' }} />,
+        icon: <CreateIcon sx={{ fontSize: 40, color: 'white' }} />,
         link: "/CreateTest",
         gradient: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
-        hoverGradient: "linear-gradient(135deg, #0e877c 0%, #32d46b 100%)"
+        hoverGradient: "linear-gradient(135deg, #0e877c 0%, #32d46b 100%)",
+        textColor: 'white'
       },
       {
         title: "צפיה במבחנים",
         description: "נהל ובדוק את המבחנים הקיימים",
-        icon: <VisibilityIcon sx={{ fontSize: 40 }} />,
+        icon: <VisibilityIcon sx={{ fontSize: 40, color: 'white' }} />,
         link: "/ViewTests",
-        gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        hoverGradient: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)"
+        gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+        hoverGradient: "linear-gradient(135deg, #3fa2f7 0%, #00dff7 100%)",
+        textColor: 'white'
       },
-      { 
+      {
         title: "גרף ממוצעי מבחנים",
         description: "צפה בממוצעי הציונים של התלמידים במבחנים שלך",
-        icon: <BarChartIcon sx={{ fontSize: 40 }} />, 
+        icon: <BarChartIcon sx={{ fontSize: 40, color: 'white' }} />,
         onClick: () => {
           setViewGraph(true); 
           fetchTeacherTests(); 
         },
-        gradient: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)", 
-        hoverGradient: "linear-gradient(135deg, #ff8a8e 0%, #fdbefb 99%, #fdbefb 100%)" 
+        gradient: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)",
+        hoverGradient: "linear-gradient(135deg, #ff8a8e 0%, #fdbefb 99%, #fdbefb 100%)",
+        textColor: '#333'  // טקסט כהה לרקע בהיר
       }
     ];
+    
   
     const fetchTeacherTests = async () => {
       setLoadingTests(true);
@@ -180,16 +183,30 @@ import {
             >
               ברוך הבא למערכת ניהול המבחנים המתקדמת
             </Typography>
-            {!viewGraph && (
+            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 4, pl: 6 }}>
               <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={handleLogout}
-                  sx={{ mt: 2 }}
+                variant="contained"
+                color="error"
+                onClick={handleLogout}
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  py: 1.5,
+                  px: 4,
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  letterSpacing: '0.5px',
+                  background: 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)',
+                  boxShadow: '0 3px 5px 2px rgba(244, 67, 54, .3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)',
+                    boxShadow: '0 4px 8px 3px rgba(244, 67, 54, .4)'
+                  }
+                }}
               >
-                  התנתקות
+                LogOut
               </Button>
-            )}
+            </Box>
           </Box>
         </Fade>
 
@@ -236,16 +253,19 @@ import {
                       }}
                     >
                       <CardContent 
-                        sx={{ 
+                        sx={{
                           color: 'white',
                           textAlign: 'center',
                           py: 6,
                           position: 'relative',
-                          zIndex: 1
+                          zIndex: 1,
+                          bgcolor: 'transparent',
+                          border: 'none',
+                          boxShadow: 'none'
                         }}
                       >
                         <Box 
-                          sx={{ 
+                          sx={{
                             mb: 3,
                             display: 'flex',
                             justifyContent: 'center',
@@ -268,10 +288,14 @@ import {
                         <Typography 
                           variant="h4" 
                           component="h2" 
-                          sx={{ 
+                          sx={{
                             fontWeight: 700,
                             mb: 2,
-                            fontSize: { xs: '1.5rem', md: '2rem' }
+                            fontSize: { xs: '1.5rem', md: '2rem' },
+                            color: 'white',
+                            bgcolor: 'transparent',
+                            border: 'none',
+                            boxShadow: 'none'
                           }}
                         >
                           {item.title}
@@ -279,10 +303,14 @@ import {
                         
                         <Typography 
                           variant="body1" 
-                          sx={{ 
+                          sx={{
                             opacity: 0.9,
                             fontSize: '1.1rem',
-                            lineHeight: 1.6
+                            lineHeight: 1.6,
+                            color: 'white',
+                            bgcolor: 'transparent',
+                            border: 'none',
+                            boxShadow: 'none'
                           }}
                         >
                           {item.description}

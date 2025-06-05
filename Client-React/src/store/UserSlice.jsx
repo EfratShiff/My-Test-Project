@@ -10,6 +10,10 @@ const initialState = {
             state.userName=action.payload;
         },
         logout:(state)=>{
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('email');
+            localStorage.removeItem('name');
             state.userName=null;
         }
     }

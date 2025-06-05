@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { useDispatch } from 'react-redux';
+import { logout } from '../store/UserSlice';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -28,6 +31,8 @@ import { Person as PersonIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 const Graph = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [testResults, setTestResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -120,6 +125,11 @@ const Graph = () => {
     setClassAverage(null);
   };
 
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ py: 6, display: 'flex', justifyContent: 'center' }}>
@@ -146,6 +156,30 @@ const Graph = () => {
       maxWidth: '100%',
       margin: 0
     }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, pl: 6 }}>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleLogout}
+          sx={{
+            fontWeight: 600,
+            fontSize: '1rem',
+            py: 1.5,
+            px: 4,
+            borderRadius: '8px',
+            textTransform: 'none',
+            letterSpacing: '0.5px',
+            background: 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)',
+            boxShadow: '0 3px 5px 2px rgba(244, 67, 54, .3)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)',
+              boxShadow: '0 4px 8px 3px rgba(244, 67, 54, .4)'
+            }
+          }}
+        >
+          LogOut
+        </Button>
+      </Box>
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
         {/* עמודה שמאלית: גרף */}
         <Box sx={{ flex: 1 }}>

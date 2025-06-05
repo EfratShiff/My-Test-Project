@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { addTest } from "../store/TestSlice";
+import { logout } from "../store/UserSlice";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import {Box, Button, TextField, Typography, MenuItem,
@@ -15,6 +16,11 @@ const CreateTest = () => {
   const dispatch = useDispatch();
   const [openSignatureDialog, setOpenSignatureDialog] = useState(false);
   const sigCanvasRef = useRef();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
 
   const { register, control, handleSubmit, formState: { errors }, getValues } = useForm({
     defaultValues: {
@@ -80,6 +86,30 @@ const CreateTest = () => {
 
   return (
     <Box sx={{ maxWidth: "800px", margin: "0 auto", mt: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, pl: 6 }}>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleLogout}
+          sx={{
+            fontWeight: 600,
+            fontSize: '1rem',
+            py: 1.5,
+            px: 4,
+            borderRadius: '8px',
+            textTransform: 'none',
+            letterSpacing: '0.5px',
+            background: 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)',
+            boxShadow: '0 3px 5px 2px rgba(244, 67, 54, .3)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)',
+              boxShadow: '0 4px 8px 3px rgba(244, 67, 54, .4)'
+            }
+          }}
+        >
+          LogOut
+        </Button>
+      </Box>
       <Typography variant="h4" align="center" gutterBottom>
         יצירת מבחן
       </Typography>

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useDispatch } from "react-redux";
+import { logout } from "../store/UserSlice";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
   Container, 
@@ -42,6 +45,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useParams } from 'react-router-dom';
 
 const ViewRezultTest = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { testId } = useParams();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -121,6 +126,11 @@ const ViewRezultTest = () => {
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setSelectedResult(null);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
   };
 
   const renderScore = (score) => {
@@ -231,6 +241,30 @@ const ViewRezultTest = () => {
 
   return (
     <Container maxWidth="md" dir="rtl" sx={{ my: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, pl: 6 }}>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleLogout}
+          sx={{
+            fontWeight: 600,
+            fontSize: '1rem',
+            py: 1.5,
+            px: 4,
+            borderRadius: '8px',
+            textTransform: 'none',
+            letterSpacing: '0.5px',
+            background: 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)',
+            boxShadow: '0 3px 5px 2px rgba(244, 67, 54, .3)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)',
+              boxShadow: '0 4px 8px 3px rgba(244, 67, 54, .4)'
+            }
+          }}
+        >
+          LogOut
+        </Button>
+      </Box>
       <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2, background: 'linear-gradient(to right, #e0f7fa, #f5f5f5)' }}>
         <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
           <AssignmentIcon sx={{ mr: 1, verticalAlign: 'middle' }} />

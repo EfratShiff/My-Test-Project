@@ -36,32 +36,42 @@ const SolveTest = () => {
     fetchTest();
   }, [testId]);
   useEffect(() => {
-    if (test && currentQuestionIndex < test.questions.length && (role !== "teacher"&& role!=="manager")) {
-      const questionTimeLimit = test.questions[currentQuestionIndex].timeLimit;
-      setTimer(questionTimeLimit); 
-      setSelectedAnswer(null);
-      const id = setInterval(() => {
-        setTimer((prev) => {
-          if (prev - 1 <= 0) { 
-            clearInterval(id);
-            handleTimeUp();
-          }
-          return prev - 1; 
-        });
-      }, 1000);
-      setIntervalId(id);
-      return () => {
-        clearInterval(id);
-        setIntervalId(null); 
-      };
+    if (test && currentQuestionIndex < test.questions.length) {
+      if (role === "teacher" || role === "manager") {
+        // עבור מורה או מנהל, נסמן את התשובה הנכונה מראש
+        const currentQuestion = test.questions[currentQuestionIndex];
+        const correctAnswerIndex = currentQuestion.options.findIndex(
+          option => option === currentQuestion.correctAnswer
+        );
+        setSelectedAnswer(correctAnswerIndex);
+      } else {
+        // עבור תלמיד, נפעיל את הטיימר כרגיל
+        const questionTimeLimit = test.questions[currentQuestionIndex].timeLimit;
+        setTimer(questionTimeLimit);
+        setSelectedAnswer(null);
+        const id = setInterval(() => {
+          setTimer((prev) => {
+            if (prev - 1 <= 0) {
+              clearInterval(id);
+              handleTimeUp();
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        setIntervalId(id);
+        return () => {
+          clearInterval(id);
+          setIntervalId(null);
+        };
+      }
     }
     return () => {
-        if (intervalId) {
-            clearInterval(intervalId);
-            setIntervalId(null);
-        }
+      if (intervalId) {
+        clearInterval(intervalId);
+        setIntervalId(null);
+      }
     };
-  }, [test, currentQuestionIndex, role]); 
+  }, [test, currentQuestionIndex, role]);
   useEffect(() => {
     if (role !== "teacher" && role !== "manager" && timer > 0 && timer <= 10) {
         try {
@@ -184,10 +194,11 @@ const SolveTest = () => {
     }
   };
   const handleAnswerClick = (index) => {
-    setSelectedAnswer(index);
+    // רק תלמידים יכולים לבחור תשובות
     if (role !== "teacher" && role !== "manager") {
-      recordAnswer(index); 
-       }
+      setSelectedAnswer(index);
+      recordAnswer(index);
+    }
   };
   const goToNextQuestion = () => {
     setCurrentQuestionIndex((prev) => prev + 1);
@@ -283,149 +294,103 @@ const SolveTest = () => {
     ? (timer / test.questions[currentQuestionIndex].timeLimit) * 100 
     : 0;
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: 3 }}>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" gutterBottom color="primary" textAlign="center">
+          <Typography variant="h4" gutterBottom>
             {test.title}
           </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Chip
-              icon={<QuestionMark />}
-              label={`שאלה ${currentQuestionIndex + 1} מתוך ${test.questions.length}`}
-              color="primary"
-              variant="outlined"
-            />
-            {role !== "teacher" && role !== "manager" && test.questions[currentQuestionIndex].timeLimit > 0 && ( // Only show timer chip if time limit > 0
-              <Chip
-                icon={<Timer />}
-                label={`${timer} שניות נותרו`} // Show remaining time
-                color={timer <= 10 ? "error" : "success"} // Change color based on time remaining
-                variant="filled"
-              />
-            )}
-             {role !== "teacher" && role !== "manager" && test.questions[currentQuestionIndex].timeLimit === 0 && ( // Show "No time limit" if time limit is 0
-              <Chip
-                icon={<Timer />}
-                label={`ללא הגבלת זמן`}
-                color="info"
-                variant="filled"
-              />
-            )}
-            {(role === "teacher" || role === "manager") && (
-              <Chip
-                label="מצב צפייה"
-                color="info"
-                variant="filled"
-              />
-            )}
-          </Box>
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              התקדמות במבחן
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={((currentQuestionIndex) / test.questions.length) * 100} // Progress based on completed questions
-              sx={{ height: 8, borderRadius: 4 }}
-            />
-          </Box>
-          {role !== "teacher" && role !== "manager" && test.questions[currentQuestionIndex].timeLimit > 0 && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                זמן נותר התקדמות
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={(timer / test.questions[currentQuestionIndex].timeLimit) * 100} // Progress based on time remaining
-                color={timer <= 10 ? "error" : "success"} // Match color with the Chip
-                sx={{ height: 6, borderRadius: 3 }}
-              />
-            </Box>
+          {(role === "teacher" || role === "manager") && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              מצב צפייה - התשובות הנכונות מסומנות
+            </Alert>
           )}
         </Box>
-        <Divider sx={{ mb: 3 }} />
-        <Card elevation={2} sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
-              {currentQuestion.questionText}
+        
+        {role !== "teacher" && role !== "manager" && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              שאלה {currentQuestionIndex + 1} מתוך {test.questions.length}
             </Typography>
-            <RadioGroup
-              value={selectedAnswer !== null ? selectedAnswer : ''}
-              name={`q-${currentQuestionIndex}`}
-            >
-              {currentQuestion.options.map((opt, i) => (
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Timer sx={{ mr: 1 }} />
+              <Typography variant="body1">
+                זמן נותר: {timer} דקות
+              </Typography>
+            </Box>
+            <LinearProgress 
+              variant="determinate" 
+              value={(timer / test.questions[currentQuestionIndex].timeLimit) * 100} 
+              sx={{ mb: 2 }}
+            />
+          </Box>
+        )}
+
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              {test.questions[currentQuestionIndex].questionText}
+            </Typography>
+            <RadioGroup>
+              {test.questions[currentQuestionIndex].options.map((option, index) => (
                 <FormControlLabel
-                  key={i}
-                  value={i}
+                  key={index}
+                  value={index.toString()}
                   control={
                     <Radio
-                      checked={selectedAnswer === i}
-                      onChange={() => handleAnswerClick(i)}
-                      disabled={selectedAnswer !== null && role !== "teacher" && role !== "manager"} // Disable after selecting answer for student
+                      checked={selectedAnswer === index}
+                      onChange={() => handleAnswerClick(index)}
+                      disabled={role === "teacher" || role === "manager"}
                       sx={{
                         '&.Mui-checked': {
-                          color: 'primary.main',
+                          color: role === "teacher" || role === "manager" ? 'success.main' : 'primary.main'
                         }
                       }}
                     />
                   }
-                  label={
-                    <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
-                      {opt}
-                    </Typography>
-                  }
+                  label={option}
                   sx={{
-                    border: '1px solid',
-                    borderColor: selectedAnswer === i ? 'primary.main' : 'grey.300',
-                    borderRadius: 2,
-                    margin: 1,
-                    padding: 1,
-                    backgroundColor: selectedAnswer === i ? 'primary.light' : 'transparent',
-                    '&:hover': {
-                      backgroundColor: selectedAnswer === i ? 'primary.light' : 'grey.50',
-                      borderColor: 'primary.main',
-                    },
-                    transition: 'all 0.2s ease-in-out',
+                    bgcolor: (role === "teacher" || role === "manager") && 
+                             option === test.questions[currentQuestionIndex].correctAnswer ? 
+                             'success.light' : 'transparent',
+                    borderRadius: 1,
+                    p: 1,
+                    mb: 1
                   }}
                 />
               ))}
             </RadioGroup>
           </CardContent>
         </Card>
-        {(role === "teacher" || role === "manager") && (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+          <Button
+            variant="contained"
+            startIcon={<NavigateBefore />}
+            onClick={handleNavigatePrevious}
+            disabled={currentQuestionIndex === 0}
+          >
+            שאלה קודמת
+          </Button>
+          
+          {currentQuestionIndex < test.questions.length - 1 ? (
             <Button
-              variant="outlined"
-              startIcon={<NavigateBefore />}
-              onClick={handleNavigatePrevious}
-              disabled={currentQuestionIndex === 0}
-              size="large"
+              variant="contained"
+              endIcon={<NavigateNext />}
+              onClick={handleNavigateNext}
             >
-              שאלה קודמת
+              שאלה הבאה
             </Button>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleFinishTest}
-                size="large"
-              >
-                סיום צפייה
-              </Button>
-              {currentQuestionIndex < test.questions.length - 1 && (
-                <Button
-                  variant="outlined"
-                  endIcon={<NavigateNext />}
-                  onClick={handleNavigateNext}
-                  size="large"
-                >
-                  שאלה הבאה
-                </Button>
-              )}
-            </Box>
-          </Box>
-        )}
+          ) : (
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleFinishTest}
+            >
+              סיים צפייה
+            </Button>
+          )}
+        </Box>
       </Paper>
     </Container>
   );
